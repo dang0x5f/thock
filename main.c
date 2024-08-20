@@ -70,6 +70,9 @@ void randomwords(FILE** files, int* file_lengths, char* buffer, int bufsize){
 
             fseek(files[i], offset, SEEK_SET);
             printf("%s", fgets(buffer,bufsize,files[i]));
+            /* fgets(buffer,bufsize,files[i]); */
+            /* buffer[strlen(buffer) - 1] = ' '; */
+            /* printf("%s", buffer); */
             rewind(files[i]);
         }
     }
