@@ -1,2 +1,4 @@
 prog
 main.o
+.main.c.swp
+prog.core

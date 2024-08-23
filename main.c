@@ -18,6 +18,7 @@ const char* filepaths[] = {
 void openfiles(FILE**);
 void assessfiles(FILE**,int*);
 void randomwords(FILE**,int*,char**,int);
+void formatwords(char**,int);
 void freebunch(char**,int);
 void closefiles(FILE**);
 
@@ -32,13 +33,12 @@ int main(void){
 
     randomwords(files,file_lengths,wordset,loops);
 
-    int totalbytes = 0;
-    for(int x = 0; x < loops*filecount; x++){
-        printf("%s,", wordset[x]);
-        totalbytes += strlen(wordset[x]);
-    }
-    printf("\n%d\n", totalbytes);
-    printf("\n%lu\n", sizeof(wordset));
+#ifdef DEBUG
+      for(int x = 0; x < loops*filecount; x++){
+          printf("%s,", wordset[x]);
+          totalbytes += strlen(wordset[x]);
+      }
+#endif
 
     freebunch(wordset,loops*filecount);
     closefiles(files);
@@ -79,7 +79,6 @@ void randomwords(FILE** files, int* file_lengths, char** words, int loops){
 
             for(int x = 1; x < randomline; x++)
                 offset += strlen(fgets(buffer,256,files[i]));
-
 
             fseek(files[i], offset, SEEK_SET);
             fgets(buffer,256,files[i]);
