@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <assert.h>
 #include <time.h>
@@ -18,7 +19,7 @@ const char* filepaths[] = {
 void openfiles(FILE**);
 void assessfiles(FILE**,int*);
 void randomwords(FILE**,int*,char**,int);
-void formatwords(char**,int);
+void formatwords(char**,int,int);
 void freebunch(char**,int);
 void closefiles(FILE**);
 
@@ -33,11 +34,13 @@ int main(void){
 
     randomwords(files,file_lengths,wordset,loops);
 
+    formatwords(wordset,loops,50);
+
 #ifdef DEBUG
-      for(int x = 0; x < loops*filecount; x++){
-          printf("%s,", wordset[x]);
-          totalbytes += strlen(wordset[x]);
-      }
+for(int x = 0; x < loops*filecount; x++){
+    printf("%s,", wordset[x]);
+    totalbytes += strlen(wordset[x]);
+}
 #endif
 
     freebunch(wordset,loops*filecount);
@@ -70,7 +73,7 @@ void randomwords(FILE** files, int* file_lengths, char** words, int loops){
     char buffer[256];
     int randomline, offset, index = 0;
 
-    srand(time(NULL));
+    srand(getpid());
     for(int j = 0; j < loops; j++){
         for(int i = 0; i < filecount; i++){
 
@@ -92,6 +95,22 @@ void randomwords(FILE** files, int* file_lengths, char** words, int loops){
             index++;
         }
     }
+}
+
+void formatwords(char** words, int loops, int line_end){
+    int line_size = 1; // newline 
+    
+    printf("\n");
+    for(int x = 0; x < (loops*filecount); x++){
+        line_size += (strlen( *(words + x) ) + 1);
+        if(line_size > line_end){
+            printf("\n");
+            line_size = 1 + (strlen( *(words + x) ) + 1);
+        }
+        /* printf("%s %lu,", *(words + x), (strlen( *(words + x) ) + 1) ); */
+        printf("%s ", *(words + x));
+    }
+    printf("\n\n");
 }
 
 void freebunch(char** words, int len){
