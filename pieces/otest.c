@@ -19,7 +19,10 @@ int main(void){
     int ch;
     while(true){
         if( (ch=getch()) == KEY_BACKSPACE){
-            break;
+            move(getcury(stdscr),getcurx(stdscr));
+            /* addch(' '); */
+            delch();
+            /* move(getcury(stdscr),getcurx(stdscr)-1); */
         }else if(ch == *(word + topind)){
             x = getcurx(stdscr);
             y = getcury(stdscr);
