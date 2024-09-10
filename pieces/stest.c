@@ -7,11 +7,11 @@ int x, y;               // PROMPT PROPERTY
 enum { CURSOR, SAVEON, SAVEW8, NEUTRAL, CORRECT, INCORRECT };       // FLAGS FOR TEXT CHAR STATES
 
 int write_text(char* text, char state[], int text_index){   // ******** START WRITE TEXT **********
-    getyx(prompt,y,x);
-    /* printw("Y: %d X: %d", y,x); */
-    wmove(stdscr, 1,1);
+    getyx(prompt,y,x);                                              // SAVE PROMPT Y X
+    /* printw("Y: %d X: %d", y,x); */                               // DEBUG
+    wmove(stdscr, 1,1);                                             // MOVE TO TEXT BOX
 
-    for(int x = 0; x < strlen(text); x++){
+    for(int x = 0; x < strlen(text); x++){                          // ITERATE OVER TEXT AND PRINT APPROPRIATE ATTRIBUTE
         if( state[x] == CURSOR ){
             addch(A_REVERSE | *(text+x));
         }
@@ -28,20 +28,20 @@ int write_text(char* text, char state[], int text_index){   // ******** START WR
             addch(COLOR_PAIR(2) | *(text+x));
         }
     }
-    refresh();
-    wmove(prompt,y,x);
-    wrefresh(prompt);
+    refresh();                                                      // REFRESH STD
+    wmove(prompt,y,x);                                              // RETURN CURSOR TO PROMPT
+    wrefresh(prompt);                                               // REFRESH PROMPT
 
-    return(0);
+    return(0);                                                      // RET VALUE USELESS ATM
 }                                                           // *********** END WRITE TEXT ***************
 
-int init_text_state(char* text, char state[]){
-    int index = 0;
+int init_text_state(char* text, char state[]){              // *********** START INIT TEXT **************
+    int index = 0;                                 
     char* iter;
 
-    iter = text;
+    iter = text;                                                    // SET ITER TO FRONT, INDEX + TEXTBASEPTR = ITER
 
-    while(*iter != '\0'){
+    while(*iter != '\0'){                                           // MARK CURSOR, SPACES, AND DEFAULT
         if(index == 0)
             state[index] = CURSOR;
         else if(*iter == ' ')
@@ -53,51 +53,51 @@ int init_text_state(char* text, char state[]){
         iter = text + index;
     }
 
-    return(0);
-}
+    return(0);                                                      // RET VALUE USELESS ATM
+}                                                           // ************** END INIT TEXT **************
 
-int set_text_state(char* text, char state[], int c, int index){
-    if(c == KEY_BACKSPACE){
-        if(index > 0){
+int set_text_state(char* text, char state[], int c, int index){         // ************** START SETTING TEXT STATE ******************
+    if(c == KEY_BACKSPACE){                                                     // IF KEY IS BS, THEN 
+        if(index > 0){                                                              // IF ANYTHING WAS TYPED (index moved passed 0), RESET IT
             state[index] = NEUTRAL;
             state[index - 1] = CURSOR;
-            return(index - 1);
+            return(index - 1);                                                      // RETURN DECREMENTED INDEX TO GO BACK
         }
         else{
-            return(index);
+            return(index);                                                          // IF NOTHING HAS BEEN TYPED, GO NOWHERE
         }
     }
 
-    if(*(text+index) == c)
-        state[index] = CORRECT;
-    else
-        state[index] = INCORRECT;
+    if(*(text+index) == c)                                                      // IF COMPARISON IS EQ
+        state[index] = CORRECT;                                                     // MARK STATE CORRECT
+    else                                                                        // ELSE
+        state[index] = INCORRECT;                                                   // MARK STATE INCORRECT
 
-    state[index + 1] = CURSOR;
+    state[index + 1] = CURSOR;                                                  // NO MATTER CORRECT/INCORRECT, ADVANCE CURSOR...
 
-    return(index + 1);
-}
+    return(index + 1);                                                          // ...THUS RETURN INCREMENTED INDEX
+}                                                                       // ****************** END SETTING TEXT STATE ********************
 
-int write_char(int c, char buffer[], int buffer_index, char text_state[], int* text_index){
+int write_char(int c, char buffer[], int buffer_index, char text_state[], int* text_index){ // ************* START WRITE CHAR *************
     int r = buffer_index;
 
-    if(c == KEY_BACKSPACE){
-        mvaddstr(20,30,"BS");
-        if(getcurx(prompt) > 1){
-            wmove(prompt, getcury(prompt),getcurx(prompt)-1);
-            waddch(prompt,' ');
-            wmove(prompt, getcury(prompt),getcurx(prompt)-1);
+    if(c == KEY_BACKSPACE){                                                                         // IF BS
+        mvaddstr(20,30,"BS");                                                                           // DEBUG 
+        if(getcurx(prompt) > 1){                                                                        // IF PROMPT X > 1 (needs it account for box wall too)
+            wmove(prompt, getcury(prompt),getcurx(prompt)-1);                                               // MOVE BACK
+            waddch(prompt,' ');                                                                             // ERASE CHAR
+            wmove(prompt, getcury(prompt),getcurx(prompt)-1);                                               // MOVE BACK, SINCE ADDING SPACE MOVED UP
         }
 
-        r = ((buffer_index > 0) ? (buffer_index - 1) : 0);
+        r = ((buffer_index > 0) ? (buffer_index - 1) : 0);                                              // IF ANYTHING IN BUFFER, DECRE BUFF_IND ELSE BUFF_IND = 0
     }
-    else if(c >= 32){
-        waddch(prompt,c);
-        r = ((buffer_index == 50 - 2 - 1) ? (50 - 2 - 1) : (buffer_index + 1));
+    else if(c >= 32){                                                                               // ELSE IF VALID ASCII CHAR
+        waddch(prompt,c);                                                                               // WRITE IT
+        r = ((buffer_index == 50 - 2 - 1) ? (50 - 2 - 1) : (buffer_index + 1));                         // IF WRITING OUT OF INPUT ZONE, SET BUFF_IND TO END ELSE INCR BUFF_IND
     }
        
     return r; 
-}
+}                                                                                               // ************ END WRITE CHAR ***********
 
 int main(void){
 
