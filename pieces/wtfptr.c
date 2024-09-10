@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 void chn_ptr(int* num){
-    *num = (*num) + 1;
+    *num = (*num) - 1;
 }
 
 int main(){

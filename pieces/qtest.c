@@ -4,6 +4,8 @@
 WINDOW* prompt;
 int x, y;
 
+WINDOW* stat;
+
 enum { CURSOR, SAVEON, SAVEW8, NEUTRAL, CORRECT, INCORRECT };
 
 int write_text(char* text, char state[], int text_index){
@@ -42,7 +44,6 @@ int init_text_state(char* text, char state[]){
     iter = text;
 
     while(*iter != '\0'){
-        /* printf("%c", *iter); */
         if(index == 0)
             state[index] = CURSOR;
         else if(*iter == ' ')
@@ -54,26 +55,36 @@ int init_text_state(char* text, char state[]){
         iter = text + index;
     }
 
-    /* printf("\n"); */
-    /* for(int x = 0; x < strlen(text); x++) */
-    /*     printf("%c", state[x]); */
-    /* printf("\n"); */
-
     return(0);
 }
 
-int set_text_state(char* text, char state[], char c, int index){
-    /* if((int)c == KEY_BACKSPACE){ */
-    /*     return(index); */
-    /* } */
-    if(*(text+index) == c)
-        state[index] = CORRECT;
-    else
-        state[index] = INCORRECT;
+int set_text_state(char* text, char state[], int c, int text_index){
+    int r = text_index;
 
-    state[index + 1] = CURSOR;
+    if(*(text+text_index) == c){
+        state[text_index] = CORRECT;
+        state[text_index + 1] = CURSOR;
+        r = text_index + 1;
+    }
+    else if((int)c == KEY_BACKSPACE){
+        if(text_index > 0){
+            if((char)c == ' ')              //
+                state[text_index] = SAVEW8; // TODO: spaces need te be reset, not like this
+            else                            //
+                state[text_index] = NEUTRAL;// original line
 
-    return(index + 1);
+            state[text_index - 1] = CURSOR;
+            r = text_index - 1;
+        }
+    }
+    else{
+        state[text_index] = INCORRECT;
+        state[text_index + 1] = CURSOR;
+        r = text_index + 1;
+    }
+
+
+    return(r);
 }
 
 int write_char(int c, char buffer[], int buffer_index, char text_state[], int* text_index){
@@ -85,19 +96,13 @@ int write_char(int c, char buffer[], int buffer_index, char text_state[], int* t
             waddch(prompt,' ');
             wmove(prompt, getcury(prompt),getcurx(prompt)-1);
         }
-        /* wmove(prompt, getcury(prompt),getcurx(prompt)-1); */
-        /* waddch(prompt,' '); */
-        /* wmove(prompt, getcury(prompt),getcurx(prompt)-1); */
-        //wdelch(prompt);                                       // NOT THE WAY
-
-
-        if((*text_index) > 0){
-            text_state[*text_index] = NEUTRAL; 
-            (*text_index) = (*text_index) - 2;
-            /* (*text_index) = 0; */
-            text_state[*text_index] = CURSOR;
-            printw("%d %d", (*text_index), (*text_index)-1);
-        }
+        /* if((*text_index) > 0){ */
+        /*     text_state[*text_index] = NEUTRAL; */ 
+        /*     (*text_index) = (*text_index) - 2; */
+        /*     /1* (*text_index) = 0; *1/ */
+        /*     text_state[*text_index] = CURSOR; */
+        /*     printw("%d %d", (*text_index), (*text_index)-1); */
+        /* } */
         r = ((buffer_index > 0) ? (buffer_index - 1) : 0);
     }
     else if(c >= 32){
@@ -107,6 +112,14 @@ int write_char(int c, char buffer[], int buffer_index, char text_state[], int* t
     }
        
     return r; 
+}
+
+void print_stats(char* text, char text_state[], int text_index){
+    mvwprintw(stat,1,1,"text_index: %d",text_index);
+
+    wmove(stat,2,1);
+    for(int x = 0; x < strlen(text); x++)
+        waddch(stat,text_state[x] + 48);
 }
 
 int main(void){
@@ -130,6 +143,10 @@ int main(void){
     init_pair(2, COLOR_BLACK, COLOR_RED);
     refresh();
 
+    stat = newwin(10,25,25,25);
+    box(stat,0,0);
+    wrefresh(stat);
+
     prompt = newwin(prows, pcols, 5, 10);
     box(prompt,0,0);
     keypad(prompt, TRUE);
@@ -146,8 +163,8 @@ int main(void){
         text_index = set_text_state(text, text_state, c = wgetch(prompt), text_index);
         buffer_index = write_char(c, buffer, buffer_index, text_state, &text_index);
 
-        /* printw("%d",text_index); */
-        mvwprintw(stdscr,20,20,"%d",text_index);
+        print_stats(text, text_state,text_index);
+        wrefresh(stat);
     }
 
     endwin();
