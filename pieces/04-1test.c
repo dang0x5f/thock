@@ -6,12 +6,17 @@ WINDOW* textwin;
 int tw_x, tw_y;
 int tw_h = 10;
 
+WINDOW* textwin_scrl;
+int tw_offset = 0;
+
 WINDOW* promptwin;
 int pw_x, pw_y;
 int pw_h = 3;
 
 #define MAXWIDTH 80
 #define MINWIDTH 50
+
+int h_offset = 0;
 
 void reset_stdscr(){
     clear();
@@ -26,22 +31,32 @@ void resize_layout(){
     mvwprintw(stdscr,1,1,"%dx%d",std_y,std_x);
     refresh();
 
-    int h_offset = ( (std_y)-(tw_h+pw_h) ) / 2;
+    h_offset = ( (std_y)-(tw_h+pw_h) ) / 2;
     /* int h_offset = ( (std_y)-(tw_h+pw_h) ) / 2 ) + 1; //+1 to err up */
 
-    textwin = newwin(tw_h,MINWIDTH,h_offset,(std_x/2)-(MINWIDTH/2));
-    /* box(textwin,0,0); */
-    scrollok(textwin,TRUE);    
+    textwin = newpad(200,MINWIDTH);
     for(int x = 0; x < 200; x++)
-        waddstr(textwin,"textwin");
-    /* mvwprintw(textwin,1,1,"%dx%d",getmaxy(textwin),getmaxx(textwin)); */
-    wrefresh(textwin);
+        wprintw(textwin,"%3d.%s\n",x,"textwintextwin");
+    prefresh(textwin,0,0,h_offset,(std_x/2)-(MINWIDTH/2),
+             h_offset+tw_h-1,((std_x/2)-(MINWIDTH/2))+MINWIDTH-1);
 
     promptwin = newwin(pw_h,MINWIDTH,(h_offset+tw_h),(std_x/2)-(MINWIDTH/2));
     box(promptwin,0,0);
     mvwprintw(promptwin,1,1,"%dx%d",getmaxy(promptwin),getmaxx(promptwin));
     wrefresh(promptwin);
 
+}
+
+void scrollup(){
+    /* h_offset+tw_h-1: -1 since the line starts at h_offset and counts as 1 row */
+    prefresh(textwin,--tw_offset,0,h_offset,(std_x/2)-(MINWIDTH/2),
+             h_offset+tw_h-1,((std_x/2)-(MINWIDTH/2))+MINWIDTH-1);
+}
+
+void scrolldown(){
+    /* h_offset+tw_h-1: -1 since the line starts at h_offset and counts as 1 row */
+    prefresh(textwin,++tw_offset,0,h_offset,(std_x/2)-(MINWIDTH/2),
+             h_offset+tw_h-1,((std_x/2)-(MINWIDTH/2))+MINWIDTH-1);    
 }
 
 int main(void){
@@ -63,12 +78,12 @@ int main(void){
                 resize_layout();
                 break;
             case KEY_UP: 
-                wscrl(textwin,-1);
-                wrefresh(textwin);
+                if(tw_offset > 0)
+                    scrollup();
                 break;
             case KEY_DOWN: 
-                wscrl(textwin,1);
-                wrefresh(textwin);
+                if(tw_offset < 190)
+                    scrolldown();
                 break;
             default:
                 break;
