@@ -1,4 +1,6 @@
 #include <ncurses.h>
+#include <stdlib.h>
+#include <time.h>
 
 int std_x, std_y;
 
@@ -16,7 +18,30 @@ int pw_h = 3;
 #define MAXWIDTH 80
 #define MINWIDTH 50
 
+char* dyn_text;
+int nls;
+
 int h_offset = 0;
+
+char* dynamic_text_gen(){
+    // gen nl count
+    // create pointer
+    // write lines
+    // return ptr
+
+    srand(time(NULL));
+    nls = (rand()%40)+1;
+    
+    char* text = calloc(nls*2+1,sizeof(char));
+
+    for(int x = 0; x < nls*2; x += 2)
+        text[x] = '0' + x;
+    for(int x = 1; x < nls*2; x += 2)
+        text[x] = '\n';
+    text[nls*2] = '\0';
+
+    return(text);
+}
 
 void reset_stdscr(){
     clear();
@@ -31,12 +56,17 @@ void resize_layout(){
     mvwprintw(stdscr,1,1,"%dx%d",std_y,std_x);
     refresh();
 
-    h_offset = ( (std_y)-(tw_h+pw_h) ) / 2;
     /* int h_offset = ( (std_y)-(tw_h+pw_h) ) / 2 ) + 1; //+1 to err up */
 
-    textwin = newpad(200,MINWIDTH);
-    for(int x = 0; x < 200; x++)
-        wprintw(textwin,"%3d.%s\n",x,"textwintextwin");
+    if(dyn_text != NULL)
+        free(dyn_text);
+    dyn_text = dynamic_text_gen();
+    textwin = newpad(nls,MINWIDTH);
+    wprintw(textwin,"%s",dyn_text);
+    tw_h = (nls > 10) ? 10 : nls;
+    h_offset = ( (std_y)-(tw_h+pw_h) ) / 2;
+    /* for(int x = 0; x < 200; x++) */
+    /*     wprintw(textwin,"%3d.%s\n",x,"textwintextwin"); */
     prefresh(textwin,0,0,h_offset,(std_x/2)-(MINWIDTH/2),
              h_offset+tw_h-1,((std_x/2)-(MINWIDTH/2))+MINWIDTH-1);
 
@@ -45,6 +75,8 @@ void resize_layout(){
     mvwprintw(promptwin,1,1,"%dx%d",getmaxy(promptwin),getmaxx(promptwin));
     wrefresh(promptwin);
 
+    /* mvwprintw(stdscr,std_y-1,1,"%d",nls); */
+    /* refresh(); */
 }
 
 void scrollup(){
@@ -90,6 +122,8 @@ int main(void){
         }
     }
     
+                delwin(textwin);
+                delwin(promptwin);
     endwin();
     return(0);
 }
