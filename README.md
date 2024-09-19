@@ -9,7 +9,8 @@ The IPO diagram is based on three prototype implementations:
 
 Each implementation is shown below in their respective order.
 
-![UI Layout Design](images/ui.gif)
+<!--- ![UI Layout Design](images/ui.gif) -->
+<img src="images/ui.gif" alt="UI Layout Design" width=800>
 Dynamic resizing of UI elements and scrollable text region when greater than 10 rows.
 
 ![Keyboard IPO Design](images/kbd.gif)
