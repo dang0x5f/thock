@@ -34,14 +34,17 @@ Each file demonstrates key features the application should have (see below).
 
 ## Design (Pt2)
 
-| thock.h                | ui.h              | xdata.h              |
-|------------------------|-------------------|----------------------|
-| requests ext data      | window properties | external data source |
-| requests kbd input     | window functions  |                      |
-| tracks status & state  | key definitions   |                      |
-| track ext data sources |                   |                      |
+Header files outline
 
-Essentially, thock.h is main and overlooks program data + progress. Any writing of the data is handled by the ui.h, as well as ui functions like resizing, refreshing, scrolling, etc. xdata.h where [ x == type_of_data ] is any type of external data source. For example, in main.c, above, 20 random words are retrieved through FreeBSD dictionary files, thus the xdata.h file could be dictdata.h. General cases could include: txtdata.h, jsondata.h, xmldata.h. etc.
+| thock.h            | ui.h            | xdata.h         |
+|--------------------|-----------------|-----------------|
+| request ext data   | win properties  | parse data      |
+| request kbd input  | win functions   | allocate memory |
+| track state        | key definitions |                 |
+| track status       | i/o processes   |                 |
+| track data sources |                 |                 |
+
+Essentially, thock.h is main and overlooks program data + progress. Any printing of the data is handled by the ui.h, as well as ui functions like resizing, refreshing, scrolling, etc. xdata.h where [ x == type_of_data ] is any type of external data source. For example, in main.c, above, 20 random words are retrieved through FreeBSD dictionary files, thus the xdata.h file could be dictdata.h. General cases could include: txtdata.h, jsondata.h, xmldata.h. etc.
 
 <!---
 
