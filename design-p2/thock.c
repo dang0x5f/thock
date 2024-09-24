@@ -1,9 +1,11 @@
 #include <stdio.h>
-#include <wchar.h>
+#include <stdlib.h>
+/* #include <wchar.h> */
 
 #include "ui.h"
 
-int main(void){
+int main(void)
+{
 
     init_ncurses();
     

@@ -33,20 +33,21 @@ typedef struct {
     int posy;
     int height;
     int offset;
-}TextView;
+} TextView;
 
 typedef struct {
     WINDOW* window;
     int posx;
     int posy;
     int height;
-}Prompt;
+} Prompt;
 
 /* Globals */
 static TextView textview;
 static Prompt   prompt;
 
-void init_ncurses(void){
+void init_ncurses(void)
+{
     assert(initscr() != NULL);
 
     noecho();
@@ -59,32 +60,39 @@ void init_ncurses(void){
 
 }
 
-void reset_ncurses(void){
+void reset_ncurses(void)
+{
     clear();
     endwin();
     refresh();
 }
 
-void exit_ncurses(void){
+void exit_ncurses(void)
+{
     endwin();
 }
 
-wchar_t get_key(void){
+wchar_t get_key(void)
+{
     return getch();
 }
 
-void init_textview(void){
+void init_textview(void)
+{
     /* TODO */
 }
 
-void draw_textview(void){
+void draw_textview(void)
+{
     /* TODO */
 }
 
-void init_prompt(void){
+void init_prompt(void)
+{
     /* TODO */
 }
 
-void draw_prompt(void){
+void draw_prompt(void)
+{
     /* TODO */
 }
