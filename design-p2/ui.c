@@ -2,6 +2,9 @@
 #include <ncurses.h>
 #include <assert.h>
 
+#include "ui.h"
+#include "config.h"
+
 #define WIDTH 50
 
 #define STD_X (getmaxx(stdscr))
@@ -54,10 +57,13 @@ void init_ncurses(void)
     set_escdelay(25);
     keypad(stdscr,TRUE);
     start_color();
+    refresh();
+
+    init_textview();
+    init_prompt();
 
     /* box(stdscr,0,0); */
     /* refresh(); */
-
 }
 
 void reset_ncurses(void)
@@ -79,7 +85,17 @@ wchar_t get_key(void)
 
 void init_textview(void)
 {
-    /* TODO */
+    textview.window = newpad(nls+1,WIDTH);
+    write_to_textview_test();
+    prefresh(textview.window,0,0,
+             H_OFFSET(nls+1,3),     (STD_X/2)-(WIDTH/2)+1,
+             H_OFFSET(nls+1,3)+nls, ((STD_X/2)-(WIDTH/2))+WIDTH-1 );
+}
+
+/* TODO remove this later */
+void write_to_textview_test()
+{
+    mvwprintw(textview.window,0,0,"%s",sample_text);
 }
 
 void draw_textview(void)
@@ -87,12 +103,25 @@ void draw_textview(void)
     /* TODO */
 }
 
-void init_prompt(void)
+void write_to_textview(char* text, char s[], int sl)
 {
     /* TODO */
 }
 
+void init_prompt(void)
+{
+    prompt.window = newwin(3,WIDTH,
+                           H_OFFSET(nls+1,3)+nls+1,(STD_X/2)-(WIDTH/2));
+    box(prompt.window,0,0);
+    wrefresh(prompt.window);
+}
+
 void draw_prompt(void)
+{
+    /* TODO */
+}
+
+void write_to_prompt(int c, char b[], int bl)
 {
     /* TODO */
 }

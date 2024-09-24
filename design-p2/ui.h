@@ -11,11 +11,16 @@ wchar_t get_key(void);
 
 void init_textview(void);
 void draw_textview(void);
+void write_to_textview(char*,char[],int);
+
+/* TODO remove this later */
+void write_to_textview_test(void);
 
 /* void init_textview_scroll(void); */
 /* void draw_textview_scroll(void); */
 
 void init_prompt(void);
 void draw_prompt(void);
+void write_to_prompt(int,char[],int);
 
 #endif // UI_H
