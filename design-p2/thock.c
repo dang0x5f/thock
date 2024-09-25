@@ -6,12 +6,13 @@
 
 int main(void)
 {
+    wchar_t key;
 
     init_ncurses();
     
-    wchar_t key;
-    while( (key=get_key()) != KEY_ESC){
-        
+    while(1){
+        key = get_key();
+        if( (key = evaluate_key(key)) < 0 ) break;
     }
 
     exit_ncurses();
