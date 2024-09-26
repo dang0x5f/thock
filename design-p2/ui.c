@@ -56,14 +56,14 @@ void init_ncurses(void)
     set_escdelay(25);
     keypad(stdscr,TRUE);
     start_color();
+
+     /* init_pair(1, COLOR_BLUE, COLOR_WHITE); */
+
     box(stdscr,0,0);
     refresh();
 
     init_textview();
     init_prompt();
-
-    /* TODO: delete later */
-    /* mvwprintw(stdscr,0,0,"y:%d x:%d",textview.window->_maxy,textview.window->_maxx); */
 
     /* box(stdscr,0,0); */
     /* refresh(); */
@@ -116,17 +116,22 @@ void redraw_all(void)
     init_prompt();
 }
 
-/* prefresh(window, window_y, window_x,                                         */ 
-/*          relative_to_stdscr_y_upperleft, relative_to_stdscr_x_upperleft,     */ 
-/*          relative_to_stdscr_y_bottomright, relative_to_stdscr_x_bottomright) */
+/* prefresh(window, window_y, window_x,        */                                         
+/*          relative_to_stdscr_y_upperleft,    */ 
+/*          relative_to_stdscr_x_upperleft,    */     
+/*          relative_to_stdscr_y_bottomright,  */ 
+/*          relative_to_stdscr_x_bottomright)  */
 void init_textview(void)
 {
     textview.height = (newlines + 1) > MAX_HEIGHT ? MAX_HEIGHT : newlines + 1;
     textview.window = newpad(textview.height,WIDTH);
+      /* wbkgd(textview.window,COLOR_PAIR(1)); // TODO: debug. delete later */ 
     write_to_textview_test();
     prefresh(textview.window,0,0,
-             H_OFFSET(textview.height,3)                 , ((STD_X/2)-(WIDTH/2))+1,
-             H_OFFSET(textview.height,3)+textview.height , ((STD_X/2)-(WIDTH/2))+WIDTH-2 );
+             H_OFFSET(textview.height,3), 
+                     ((STD_X/2)-(WIDTH/2))+1,
+             H_OFFSET(textview.height,3)+textview.height,
+                     ((STD_X/2)-(WIDTH/2))+WIDTH-2 );
 }
 
 /* TODO remove this later */
@@ -148,7 +153,8 @@ void write_to_textview(char* text, char s[], int sl)
 void init_prompt(void)
 {
     prompt.window = newwin(3,WIDTH,
-                           H_OFFSET(textview.height,3)+textview.height,(STD_X/2)-(WIDTH/2));
+                           H_OFFSET(textview.height,3)+textview.height,
+                           (STD_X/2)-(WIDTH/2));
     box(prompt.window,0,0);
     wrefresh(prompt.window);
 }
@@ -164,5 +170,3 @@ void write_to_prompt(int c, char b[], int bl)
 }
 
 
-
-/* TODO: newlines should still assign height. >=10 lines means there is atleast 10 rows */
