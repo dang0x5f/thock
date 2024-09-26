@@ -56,6 +56,7 @@ void init_ncurses(void)
     set_escdelay(25);
     keypad(stdscr,TRUE);
     start_color();
+    box(stdscr,0,0);
     refresh();
 
     init_textview();
@@ -90,6 +91,9 @@ wchar_t evaluate_key(wchar_t k)
     flushinp();
     switch(k){
         case KEY_RESIZE:
+            redraw_all();
+            return 0;
+            break;
         case KEY_ESC:
             return -1;
             break;
@@ -97,6 +101,19 @@ wchar_t evaluate_key(wchar_t k)
             return 0;
             break;
     }
+}
+
+void redraw_all(void)
+{
+    delwin(textview.window);
+    delwin(prompt.window);
+    reset_ncurses();
+
+    box(stdscr,0,0);
+    refresh();
+
+    init_textview();
+    init_prompt();
 }
 
 /* prefresh(window, window_y, window_x,                                         */ 

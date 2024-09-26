@@ -9,6 +9,7 @@ void exit_ncurses(void);
 
 wchar_t get_key(void);
 wchar_t evaluate_key(wchar_t);
+void redraw_all(void);
 
 void init_textview(void);
 void draw_textview(void);
