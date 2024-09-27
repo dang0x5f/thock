@@ -29,6 +29,7 @@ int main(void)
 
     /* TODO: delete later */
     printf("%s\n", dict.get_wordset(20));
+    printf("%s\n", dict1.get_wordset(20));
 
     return(0);
 }
