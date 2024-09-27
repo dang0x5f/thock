@@ -2,7 +2,17 @@
 #include <stdlib.h>
 /* #include <wchar.h> */
 
+#include "thock.h"
 #include "ui.h"
+
+enum char_status {
+    CURSOR,
+    EMPTY,
+    CORRECT,
+    INCORRECT,
+    LOCKED,
+    UNLOCKED
+};
 
 int main(void)
 {
@@ -16,6 +26,9 @@ int main(void)
     }
 
     exit_ncurses();
+
+    /* TODO: delete later */
+    printf("%s\n", dict.get_wordset(20));
 
     return(0);
 }
