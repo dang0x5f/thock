@@ -1,29 +1,31 @@
 #ifndef THOCK_H
 #define THOCK_H
 
-/* TODO: delete later */
-char* bar(int width){
-    return "barfoo";
-}
-/* TODO: delete later */
-char* foo(int width){
-    return "foobar";
-}
+/* /1* TODO: delete later *1/ */
+/* char* bar(int width){ */
+/*     return "barfoo"; */
+/* } */
+/* /1* TODO: delete later *1/ */
+/* char* foo(int width){ */
+/*     return "foobar"; */
+/* } */
+
+/* /1* TODO: delete later *1/ */
+/* DataSource dict = { */
+/*     "foo", */
+/*     bar */
+/* }; */
+/* /1* TODO: delete later *1/ */
+/* DataSource dict1 = { */
+/*     "bar", */
+/*     foo */
+/* }; */
 
 typedef struct {
     char* name;
-    char* (*get_wordset)(int);
-} DataSource;
+    char* (*get_wordset)(int*);
+} DataModule;
 
-/* TODO: delete later */
-DataSource dict = {
-    "foo",
-    bar
-};
-/* TODO: delete later */
-DataSource dict1 = {
-    "bar",
-    foo
-};
+/* extern DataModule data_modules[]; */
 
 #endif // THOCK_H

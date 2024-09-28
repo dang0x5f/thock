@@ -2,6 +2,9 @@
 #include <stdlib.h>
 /* #include <wchar.h> */
 
+#include <string.h>
+
+#include "dictmod.h"
 #include "thock.h"
 #include "ui.h"
 
@@ -14,11 +17,52 @@ enum char_status {
     UNLOCKED
 };
 
+int request_wordset(char*);
+
+int request_wordset(char* wordset)
+{
+    int size;
+    char* temp_wordset;
+    if(wordset != NULL) free(wordset);
+    
+    /* temp_wordset = data_modules[0].get_wordset(&size); */
+
+    /* TODO: */
+    /* newlines = size / width */
+    /* format temp_wordset -> wordset, free temp_wordset */
+
+    return size;
+}
+
 int main(void)
 {
+    char* words = NULL;
+    int size = 0;
+
+    words = get_random_wordset(&size);
+
+    printf("%s\n",words);
+printf("%d , %d\n", size, (int)strlen(words));
+
+    free(words);
+
+    words = get_random_wordset(&size);
+
+    printf("%s\n",words);
+printf("%d , %d\n", size, (int)strlen(words));
+
+    free(words);
+    return(0);    
+}
+
+int main2(void)
+{
+    int size;
     wchar_t key;
+    char* wordset;
 
     init_ncurses();
+    size = request_wordset(wordset);
     
     while(1){
         key = get_key();
@@ -26,10 +70,6 @@ int main(void)
     }
 
     exit_ncurses();
-
-    /* TODO: delete later */
-    printf("%s\n", dict.get_wordset(20));
-    printf("%s\n", dict1.get_wordset(20));
 
     return(0);
 }
