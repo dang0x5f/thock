@@ -24,8 +24,8 @@
 typedef struct {
     char* name;
     char* (*get_wordset)(int*);
-} DataModule;
+} Module;
 
-/* extern DataModule data_modules[]; */
+extern Module modules[];
 
 #endif // THOCK_H

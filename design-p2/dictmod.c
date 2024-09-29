@@ -88,7 +88,7 @@ char* generate_words(FILE** files, int* file_lengths, int* size)
 
     /* TODO: realloc once more -1 to get rid of space ; may keep after all */
     
-    *size = strlen(wordset) + 1;
+    *size = strlen(wordset);
     return(wordset);
 }
 
