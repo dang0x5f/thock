@@ -1,4 +1,4 @@
-# Development
+# Devlog
 
 > summary
 
@@ -41,14 +41,25 @@ Header files outline
 | track status       | i/o processes   |                 |
 | track data sources |                 |                 |
 
-Essentially, thock.h is main and overlooks program data + progress. Any printing of the data is handled by the ui.h, as well as ui functions like resizing, refreshing, scrolling, etc. xdata.h where [ x == type_of_data ] is any type of external data source. For example, in main.c, above, 20 random words are retrieved through FreeBSD dictionary files, thus the xdata.h file could be dictdata.h. General cases could include: txtdata.h, jsondata.h, xmldata.h. etc.
+Essentially, thock.h is main and overlooks program data + progress. 
+Any output display of the data is handled by the ui.h, as well as ui functions like resizing, refreshing, scrolling, etc. 
+xdata.h (==where x equals type-of-data==) is any type of external data source. For example, [above](#main.c-(generate-random-text), 20 random words are retrieved through FreeBSD dictionary files, thus the xdata.h file could be dictdata.h. General cases could include: txtdata.h, jsondata.h, xmldata.h. etc.
 
-<!---
+## Design (Pt3)
 
-thock.h/c ui.h/c 
+![DesignP3](images/thock-design-p3.png "ThockDesignP3")
 
-dictdata.h/c xmldata.h/c koexdata.h/c txtdata.h/c jsondata.h/c csvdata.h/c
+* thock.c - contains program entry and is still expected to request keyboard input, request wordsets, track progress, track states, and track data modules
+* thock.h - primarily declares a extern array, modules, that is inititialized in mods.h
 
-TODO
+* ui.c - ui implementations for windows, keyboard input, and function key definitions
+* ui.h - common header for c file
 
--->
+* config.h - configurable variables to change ui components
+* mods.h - module array initialization containing all the modules that are compiled that supply wordsets to thock.c
+
+* (x/y)mod.c , (x/y)mod.h - any external module that can serve an appropriate wordset to thock.c and are plugged into mods.h
+
+This design (hopefully) encourages external modules to be easily defined as needed and simply included in the mods.h file without having to make major altercations to thock or ui files. Same with config.h, ui look and feel can be changed through a few variables there without needed to dig into ui files.
+
+Overall, the goal is for quick configuration/extensibility through 2 files: mods.h , config.h
