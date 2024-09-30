@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 /* #include <wchar.h> */
-
 #include <string.h>
 
-#include "dictmod.h"
 #include "thock.h"
 #include "ui.h"
+#include "mods.h"
 
 enum char_status {
     CURSOR,
@@ -34,22 +33,24 @@ int request_wordset(char* wordset)
     return size;
 }
 
+/* TODO: Add linked list for modules */
 int main(void)
 {
     char* words = NULL;
     int size = 0;
+    
+    words = modules[0].get_wordset(&size);
 
-    words = get_random_wordset(&size);
 
     printf("%s\n",words);
-printf("%d , %d\n", size, (int)strlen(words));
+    printf("%d , %d\n", size, (int)strlen(words));
 
     free(words);
 
-    words = get_random_wordset(&size);
+/*     words = get_random_wordset(&size); */
 
-    printf("%s\n",words);
-printf("%d , %d\n", size, (int)strlen(words));
+/*     printf("%s\n",words); */
+/* printf("%d , %d\n", size, (int)strlen(words)); */
 
     free(words);
     return(0);    
