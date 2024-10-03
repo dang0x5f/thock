@@ -15,9 +15,6 @@ void init_textview(void);
 void draw_textview(void);
 void write_to_textview(char*,char[],int);
 
-/* void init_textview_scroll(void); */
-/* void draw_textview_scroll(void); */
-
 void init_prompt(void);
 void draw_prompt(void);
 void write_to_prompt(int,char[],int);

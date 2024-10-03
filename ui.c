@@ -12,23 +12,6 @@
 #define STD_Y (getmaxy(stdscr))
 #define H_OFFSET(tv_h,pw_h) ( ((STD_Y)-(tv_h+pw_h)) / 2 )
 
-/* typedef struct { */
-/*     WINDOW* window; */
-/*     int posx; */
-/*     int posy; */
-/*     int height; */
-/* }TextView_Scroll; */
-
-/* static TextView_Scroll textview_scroll; */
-
-/* void init_textview_scroll(void){ */
-/*     /1* TODO *1/ */
-/* } */
-
-/* void draw_textview_scroll(void){ */
-/*     /1* TODO *1/ */
-/* } */
-
 typedef struct {
     WINDOW* window;
     int posx;

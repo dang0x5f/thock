@@ -39,20 +39,21 @@ int main(void)
     char* words = NULL;
     int size = 0;
     
-    words = modules[0].get_wordset(&size);
+    /* words = modules[0].get_wordset(&size); */
 
+    int num_of_mods = sizeof(modules)/sizeof(Module);
+    printf("\t%d %d\n", sizeof(modules), sizeof(Module));
 
-    printf("%s\n",words);
-    printf("%d , %d\n", size, (int)strlen(words));
+    for(int x = 0; x < num_of_mods; x++){
+        words = modules[x].get_wordset(&size);
+        printf("%s\n",words);
+        free(words);
+    }
+    /* printf("%s\n",words); */
+    /* printf("%d , %d\n", size, (int)strlen(words)); */
 
     if(words != NULL) free(words);
 
-/*     words = get_random_wordset(&size); */
-
-/*     printf("%s\n",words); */
-/* printf("%d , %d\n", size, (int)strlen(words)); */
-
-    /* free(words); */
     return(0);    
 }
 

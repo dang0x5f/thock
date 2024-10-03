@@ -1,4 +1,4 @@
 prog
-main.o
-.main.c.swp
-prog.core
+*.o
+*.swp
+*.core
