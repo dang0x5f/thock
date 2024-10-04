@@ -1,4 +1,6 @@
 prog
+tags
 *.o
+*.d
 *.swp
 *.core

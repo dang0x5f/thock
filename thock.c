@@ -34,7 +34,7 @@ int request_wordset(char* wordset)
 }
 
 /* TODO: Add linked list for modules */
-int main(void)
+int main2(void)
 {
     char* words = NULL;
     int size = 0;
@@ -57,7 +57,7 @@ int main(void)
     return(0);    
 }
 
-int main2(void)
+int main(void)
 {
     int size;
     wchar_t key;

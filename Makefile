@@ -1,8 +1,8 @@
 .POSIX:
 CC     := clang
-CFLAGS := -ggdb -Wall -Wextra
+CFLAGS := -ggdb -Wall -Wextra -MD
 LDLIBS := -lncurses
-# CPPFLAGS := ?
+# CPPFLAGS :=
 
 BIN  := prog
 
@@ -16,18 +16,18 @@ ${BIN}: ${OBJS}
 	${CC} ${OBJS} -o $@ ${LDLIBS}
 
 ${OBJS}: ${SRCS}
-	${CC} -c ${SRCS}
+	${CC} -c ${SRCS} ${CPPFLAGS} ${CFLAGS}
 
-mods: ${MOD_OBJS}
-	${CC} ${MOD_OBJS} -o ${BIN} ${LDLIBS}
+mods: 
+	${MAKE} SRCS="${MOD_SRCS}" OBJS="${MOD_OBJS}" CPPFLAGS="-DWITH_MODS"
 
-${MOD_OBJS}: ${MOD_SRCS}
-	${CC} -c ${MOD_SRCS} -DWITH_MODS
+# debug: ${OBJS}
+# 	${CC} ${OBJS} -o ${BIN}
 
-debug: ${OBJS}
-	${CC} ${OBJS} -o ${BIN}
+todo:
+	grep -rn TODO
 
 clean:
-	rm -f ${BIN} *.o
+	rm -f ${BIN} *.o *.d
 
 .PHONY: clean
