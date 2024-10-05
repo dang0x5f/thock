@@ -1,6 +1,6 @@
 .POSIX:
 CC     := clang
-CFLAGS := -ggdb -Wall -Wextra -MD
+CFLAGS := -ggdb -Wall -Wextra 
 LDLIBS := -lncurses
 # CPPFLAGS :=
 

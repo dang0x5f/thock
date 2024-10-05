@@ -1,6 +1,7 @@
 #define _XOPEN_SOURCE_EXTENDED 1
 #include <ncurses.h>
 #include <assert.h>
+#include <locale.h>
 
 #include "ui.h"
 #include "config.h"
@@ -8,6 +9,7 @@
 #define WIDTH 50
 #define MAX_HEIGHT 5
 
+#define CTRL(x) ((x) & 0x1F)
 #define STD_X (getmaxx(stdscr))
 #define STD_Y (getmaxy(stdscr))
 #define H_OFFSET(tv_h,pw_h) ( ((STD_Y)-(tv_h+pw_h)) / 2 )
@@ -33,6 +35,7 @@ static Prompt   prompt;
 
 void init_ncurses(void)
 {
+    setlocale(LC_ALL,"");
     assert(initscr() != NULL);
 
     noecho();
@@ -61,27 +64,40 @@ void reset_ncurses(void)
 
 void exit_ncurses(void)
 {
+    delwin(textview.window);
+    delwin(prompt.window);
     endwin();
 }
 
 wchar_t get_key(void)
 {
-    return getch();
+    wint_t key;
+
+    key = getch();
+    /* if(key == CTRL('q')) exit(1); */
+
+    /* if(get_wch(&key) == OK){ */
+        return (wchar_t)key;
+    /* } */
+    
+    /* evaluate_key(key); */
+    /* return((wchar_t)0); */
 }
 
-wchar_t evaluate_key(wchar_t k)
+void evaluate_key(wchar_t k)
 {
     flushinp();
     switch(k){
         case KEY_RESIZE:
             redraw_all();
-            return 0;
+            /* return 0; */
             break;
-        case KEY_ESC:
-            return -1;
+        case KEY_F(9):
+            exit_ncurses();
+            exit(-1);
             break;
         default:
-            return 0;
+            /* return 0; */
             break;
     }
 }
@@ -142,9 +158,11 @@ void draw_prompt(void)
     /* TODO */
 }
 
-void write_to_prompt(int c, char b[], int bl)
+void write_to_prompt(wchar_t c, char b[], int bl)
 {
-    /* TODO */
+    cchar_t cc = { A_NORMAL, c };
+    wadd_wch(prompt.window,&cc);
+    wrefresh(prompt.window);
 }
 
 

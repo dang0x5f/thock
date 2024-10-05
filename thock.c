@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-/* #include <wchar.h> */
 #include <string.h>
 
 #include "thock.h"
@@ -68,10 +67,14 @@ int main(void)
     
     while(1){
         key = get_key();
-        if( (key = evaluate_key(key)) < 0 ) break;
+        
+        if(key > 32)
+            write_to_prompt(key,"abc",0);
+        
+        /* if( (key = evaluate_key(key)) < 0 ) break; */
     }
 
-    exit_ncurses();
+    /* exit_ncurses(); */
 
     return(0);
 }
