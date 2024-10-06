@@ -25,14 +25,11 @@ int request_wordset(char* wordset)
     
     /* temp_wordset = data_modules[0].get_wordset(&size); */
 
-    /* TODO: */
-    /* newlines = size / width */
-    /* format temp_wordset -> wordset, free temp_wordset */
+    /* TODO: newlines = size / width; format temp_wordset -> wordset, free temp_wordset */
 
     return size;
 }
 
-/* TODO: Add linked list for modules */
 int main2(void)
 {
     char* words = NULL;
@@ -67,14 +64,9 @@ int main(void)
     
     while(1){
         key = get_key();
-        
-        if(key > 32)
-            write_to_prompt(key,"abc",0);
-        
-        /* if( (key = evaluate_key(key)) < 0 ) break; */
     }
 
-    /* exit_ncurses(); */
+    exit_ncurses();
 
     return(0);
 }

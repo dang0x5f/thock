@@ -38,21 +38,17 @@ void init_ncurses(void)
     setlocale(LC_ALL,"");
     assert(initscr() != NULL);
 
+    cbreak();
     noecho();
     set_escdelay(25);
     keypad(stdscr,TRUE);
     start_color();
-
-     /* init_pair(1, COLOR_BLUE, COLOR_WHITE); */
 
     box(stdscr,0,0);
     refresh();
 
     init_textview();
     init_prompt();
-
-    /* box(stdscr,0,0); */
-    /* refresh(); */
 }
 
 void reset_ncurses(void)
@@ -69,35 +65,50 @@ void exit_ncurses(void)
     endwin();
 }
 
-wchar_t get_key(void)
+int get_key(void)
 {
+    int rc;
     wint_t key;
-
-    key = getch();
-    /* if(key == CTRL('q')) exit(1); */
-
-    /* if(get_wch(&key) == OK){ */
-        return (wchar_t)key;
-    /* } */
     
-    /* evaluate_key(key); */
-    /* return((wchar_t)0); */
+    rc = get_wch(&key);
+    if(key == '\033'){
+        exit(0);
+    }
+        /* rc = get_wch(&key); */
+        
+    switch(rc){
+        case OK:
+            write_to_prompt(key);
+            break;
+        case KEY_CODE_YES:
+            evaluate_key(key);
+            break;
+        case ERR:
+            break;
+    }
+
+/*
+    wint_t key;
+    key = getwchar();
+    evaluate_key(key);
+    return(0);
+*/
+
+/* if((wint_t)key == '\033'){ */
+/*     fprintf(stderr,"esc"); */
+/*     exit(-669); */
+/* } */
 }
 
-void evaluate_key(wchar_t k)
+void evaluate_key(wint_t key)
 {
-    flushinp();
-    switch(k){
+    switch(key){
         case KEY_RESIZE:
             redraw_all();
-            /* return 0; */
             break;
-        case KEY_F(9):
+        case KEY_F(12):
             exit_ncurses();
             exit(-1);
-            break;
-        default:
-            /* return 0; */
             break;
     }
 }
@@ -125,7 +136,6 @@ void init_textview(void)
     textview.height = (newlines + 1) > MAX_HEIGHT ? MAX_HEIGHT : newlines + 1;
     textview.window = newpad(textview.height,WIDTH);
       /* wbkgd(textview.window,COLOR_PAIR(1)); // TODO: debug. delete later */ 
-    /* write_to_textview_test(); */
     prefresh(textview.window,0,0,
              H_OFFSET(textview.height,3), 
                      ((STD_X/2)-(WIDTH/2))+1,
@@ -136,12 +146,10 @@ void init_textview(void)
 
 void draw_textview(void)
 {
-    /* TODO */
 }
 
-void write_to_textview(char* text, char s[], int sl)
+int write_to_textview(char* text)
 {
-    /* TODO */
 }
 
 void init_prompt(void)
@@ -155,13 +163,12 @@ void init_prompt(void)
 
 void draw_prompt(void)
 {
-    /* TODO */
 }
 
-void write_to_prompt(wchar_t c, char b[], int bl)
+int write_to_prompt(wint_t key)
 {
-    cchar_t cc = { A_NORMAL, c };
-    wadd_wch(prompt.window,&cc);
+    wchar_t glyph[] = { (wchar_t)key, 0 };
+    waddwstr(prompt.window,glyph);
     wrefresh(prompt.window);
 }
 
