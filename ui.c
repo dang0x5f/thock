@@ -38,9 +38,9 @@ void init_ncurses(void)
     setlocale(LC_ALL,"");
     assert(initscr() != NULL);
 
-    cbreak();
     noecho();
     set_escdelay(25);
+    nodelay(stdscr,TRUE);
     keypad(stdscr,TRUE);
     start_color();
 
@@ -71,14 +71,20 @@ int get_key(void)
     wint_t key;
     
     rc = get_wch(&key);
-    if(key == '\033'){
+
+    if(key == CTRL('x')){
+        exit_ncurses();
         exit(0);
     }
-        /* rc = get_wch(&key); */
-        
+
+    // TODO: determine fate of function keys
+    if(key == '\033'){            
+        while(rc != ERR) rc = get_wch(&key);
+    }
+
     switch(rc){
         case OK:
-            write_to_prompt(key);
+            if(key >= 32) write_to_prompt(key);
             break;
         case KEY_CODE_YES:
             evaluate_key(key);
@@ -86,13 +92,6 @@ int get_key(void)
         case ERR:
             break;
     }
-
-/*
-    wint_t key;
-    key = getwchar();
-    evaluate_key(key);
-    return(0);
-*/
 
 /* if((wint_t)key == '\033'){ */
 /*     fprintf(stderr,"esc"); */

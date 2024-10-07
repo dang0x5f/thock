@@ -63,3 +63,8 @@ xdata.h (==where x equals type-of-data==) is any type of external data source. F
 This design (hopefully) encourages external modules to be easily defined as needed and simply included in the mods.h file without having to make major altercations to thock or ui files. Same with config.h, ui look and feel can be changed through a few variables there without needed to dig into ui files.
 
 Overall, the goal is for quick configuration/extensibility through 2 files: mods.h , config.h
+
+# Notes
+
+TERMCAP vs TERMINFO
+: FreeBSD's use of termcap inhibits function key identification by ncurses because termcap has a limited definition space. Unfortunately, [st](https://st.suckless.org/)'s entry in /etc/termcap omits F10,F11,F12, and beyond.

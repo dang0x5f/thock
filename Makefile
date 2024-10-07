@@ -1,7 +1,7 @@
 .POSIX:
 CC     := clang
 CFLAGS := -ggdb -Wall -Wextra 
-LDLIBS := -lncurses
+LDLIBS := -lncursesw
 # CPPFLAGS :=
 
 BIN  := prog
@@ -28,6 +28,6 @@ todo:
 	grep -rn TODO
 
 clean:
-	rm -f ${BIN} *.o *.d
+	rm -f ${BIN} *.o *.d *.core
 
 .PHONY: clean
