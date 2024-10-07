@@ -11,14 +11,17 @@ void exit_ncurses(void);
 
 int get_key(void);
 void evaluate_key(wint_t);
-void redraw_all(void);
+void redraw_all(int);
 
-void init_textview(void);
-void draw_textview(void);
-int write_to_textview(char*);
+void init_textview(int);
+    /* void draw_textview(void); */
+void load_wordset_textview(char*, int);
+int write_to_textview(char*,int);
 
 void init_prompt(void);
-void draw_prompt(void);
+    /* void draw_prompt(void); */
 int write_to_prompt(wint_t);
+
+void refresh_x3(void);
 
 #endif // UI_H

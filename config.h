@@ -6,8 +6,6 @@
 
 static const char* default_text = "And reading itself is an amazing activity: You\nglance at a thin, flat object made from a\ntree...and the voice of the author begins to\nspeak inside your head. (Hello!) ";
 
-static int newlines = 2;
-
 static char* get_default_wordset(int* size){
     char* text;
 

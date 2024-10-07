@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "thock.h"
 #include "ui.h"
@@ -19,12 +20,21 @@ int request_wordset(char*);
 
 int request_wordset(char* wordset)
 {
-    int size;
-    char* temp_wordset;
-    if(wordset != NULL) free(wordset);
-    
-    /* temp_wordset = data_modules[0].get_wordset(&size); */
+    int size = 0;
 
+    if(wordset) free(wordset);
+
+    wordset = modules[0].get_wordset(&size);    
+
+
+    if(wordset == NULL){
+        exit_ncurses();
+        fprintf(stderr, "Error allocating wordset: %s\n", strerror(errno));
+        exit(0);
+    }
+
+    load_wordset_textview(wordset,size);
+    /* write_to_textview(wordset,size); */
     /* TODO: newlines = size / width; format temp_wordset -> wordset, free temp_wordset */
 
     return size;
@@ -45,8 +55,6 @@ int main2(void)
         printf("%s\n",words);
         free(words);
     }
-    /* printf("%s\n",words); */
-    /* printf("%d , %d\n", size, (int)strlen(words)); */
 
     if(words != NULL) free(words);
 
@@ -55,15 +63,15 @@ int main2(void)
 
 int main(void)
 {
-    int size;
-    wchar_t key;
-    char* wordset;
+    int size = 0;
+    wchar_t key = 0;
+    char* wordset = NULL;
 
     init_ncurses();
-    size = request_wordset(wordset);
     
     while(1){
-        key = get_key();
+        key  = get_key();
+        size = request_wordset(wordset);
     }
 
     exit_ncurses();
