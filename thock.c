@@ -18,6 +18,25 @@ enum char_status {
 
 int request_wordset(char*);
 
+int main(void)
+{
+    int size = 0;
+    wchar_t key = 0;
+    char* wordset = NULL;
+
+    init_ncurses();
+    
+    size = request_wordset(wordset);
+    while(1){
+        key  = get_key();
+
+    }
+
+    exit_ncurses();
+
+    return(0);
+}
+
 int request_wordset(char* wordset)
 {
     int size = 0;
@@ -26,7 +45,6 @@ int request_wordset(char* wordset)
 
     wordset = modules[0].get_wordset(&size);    
 
-
     if(wordset == NULL){
         exit_ncurses();
         fprintf(stderr, "Error allocating wordset: %s\n", strerror(errno));
@@ -34,18 +52,17 @@ int request_wordset(char* wordset)
     }
 
     load_wordset_textview(wordset,size);
-    /* write_to_textview(wordset,size); */
-    /* TODO: newlines = size / width; format temp_wordset -> wordset, free temp_wordset */
+    /* TODO: newlines = size / width; */ 
+    /* TODO: format temp_wordset -> wordset, free temp_wordset */
 
     return size;
 }
 
+/*
 int main2(void)
 {
     char* words = NULL;
     int size = 0;
-    
-    /* words = modules[0].get_wordset(&size); */
 
     int num_of_mods = sizeof(modules)/sizeof(Module);
     printf("\t%d %d\n", sizeof(modules), sizeof(Module));
@@ -60,21 +77,4 @@ int main2(void)
 
     return(0);    
 }
-
-int main(void)
-{
-    int size = 0;
-    wchar_t key = 0;
-    char* wordset = NULL;
-
-    init_ncurses();
-    
-    while(1){
-        key  = get_key();
-        size = request_wordset(wordset);
-    }
-
-    exit_ncurses();
-
-    return(0);
-}
+*/

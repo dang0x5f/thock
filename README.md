@@ -66,5 +66,7 @@ Overall, the goal is for quick configuration/extensibility through 2 files: mods
 
 # Notes
 
-TERMCAP vs TERMINFO
-: FreeBSD's use of termcap inhibits function key identification by ncurses because termcap has a limited definition space. Unfortunately, [st](https://st.suckless.org/)'s entry in /etc/termcap omits F10,F11,F12, and beyond.
+### TERMCAP vs TERMINFO
+~~FreeBSD's use of termcap inhibits function key identification by ncurses because termcap has a limited definition space. Unfortunately, [st](https://st.suckless.org/)'s entry in /etc/termcap omits F10,F11,F12, and beyond.~~
+
+edit - https://www.freebsd.org/releases/14.0R/relnotes/ terminfo preferred as of 14.0. Laptop was on old release. May still work around function keys though to avoid any confusion or backward compatability issues.

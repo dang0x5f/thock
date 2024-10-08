@@ -9,17 +9,20 @@
 #define WIDTH 50
 #define MAX_HEIGHT 5
 
-#define CTRL(x) ((x) & 0x1F)
-#define STD_X (getmaxx(stdscr))
-#define STD_Y (getmaxy(stdscr))
-#define H_OFFSET(tv_h,pw_h) ( ((STD_Y)-(tv_h+pw_h)) / 2 )
+#define buf_len             ( WIDTH - 2 )
 
+#define ctrl(x)             ( (x) & 0x1F )
+#define std_x               ( getmaxx(stdscr) )
+#define std_y               ( getmaxy(stdscr) )
+#define h_offset(tv_h,pw_h) ( ((std_y)-(tv_h+pw_h)) / 2 )
+
+/* TODO: rename attributes */
 typedef struct {
     WINDOW* window;
     int posx;
     int posy;
-    int height;
-    int rheight; 
+    int height;   // visible height
+    int rheight;  // real height
     int offset;
 } TextView;
 
@@ -28,6 +31,8 @@ typedef struct {
     int posx;
     int posy;
     int height;
+    wchar_t* buffer;
+    uint8_t  buf_pos;
 } Prompt;
 
 /* Globals */
@@ -41,11 +46,10 @@ void init_ncurses(void)
 
     noecho();
     set_escdelay(25);
-    /* nodelay(stdscr,TRUE); */
+    nodelay(stdscr,TRUE);
     start_color();
 
     box(stdscr,0,0);
-    /* refresh(); */
 
     init_textview(1);
     init_prompt();
@@ -63,7 +67,10 @@ void reset_ncurses(void)
 void exit_ncurses(void)
 {
     delwin(textview.window);
+
+    if(prompt.buffer) free(prompt.buffer);
     delwin(prompt.window);
+
     endwin();
 }
 
@@ -74,14 +81,14 @@ int get_key(void)
     
     rc = wget_wch(prompt.window,&key);
 
-    if(key == CTRL('x')){
+    if(key == ctrl('x')){
         exit_ncurses();
         exit(0);
     }
 
     // TODO: determine fate of function keys
     if(key == '\033'){            
-        flushinp();
+        flushinp(); // flush eats remaining function characters
         /* while(rc != ERR){ */
         /*     rc = wget_wch(prompt.window,&key); */
         /* } */
@@ -98,10 +105,8 @@ int get_key(void)
             break;
     }
 
-/* if((wint_t)key == '\033'){ */
-/*     fprintf(stderr,"esc"); */
-/*     exit(-669); */
-/* } */
+    /* TODO: return something meaningful */
+    return(0);
 }
 
 void evaluate_key(wint_t key)
@@ -110,12 +115,23 @@ void evaluate_key(wint_t key)
         case KEY_RESIZE:
             redraw_all(textview.rheight);
             break;
+        case KEY_BACKSPACE:
+            if(prompt.buf_pos > 0){
+                prompt.buf_pos--;
+                *(prompt.buffer+prompt.buf_pos) = (wchar_t)'\0';
+                wclear(prompt.window);
+                box(prompt.window,0,0);
+                mvwaddwstr(prompt.window, 1,1, prompt.buffer);
+                wrefresh(prompt.window);
+            }
+            break;
     }
 }
 
 void redraw_all(int h)
 {
     delwin(textview.window);
+    if(prompt.buffer) free(prompt.buffer);
     delwin(prompt.window);
     reset_ncurses();
 
@@ -139,8 +155,10 @@ void load_wordset_textview(char* wordset, int height)
     if(textview.window != NULL)
         delwin(textview.window);
 
-    if(prompt.window != NULL)
+    if(prompt.window != NULL){
+        if(prompt.buffer) free(prompt.buffer);
         delwin(prompt.window);
+    }
 
     clear();
     box(stdscr,0,0);
@@ -164,26 +182,43 @@ int write_to_textview(char* wordset, int size)
     wmove(prompt.window,y,x);
 
     refresh_x3();
+
+    /* TODO: return something meaningful */
     return(0);
 }
 
 void init_prompt(void)
 {
     prompt.window = newwin(3,WIDTH,
-                           H_OFFSET(textview.height,3)+textview.height,
-                           (STD_X/2)-(WIDTH/2));
+                           h_offset(textview.height,3)+textview.height,
+                           (std_x/2)-(WIDTH/2));
     keypad(prompt.window,TRUE);
     prompt.posy = 1;
     prompt.posx = 1;
+    prompt.buffer = malloc( (buf_len+1)*sizeof(char) );
+    prompt.buf_pos = 0;
     wmove(prompt.window,prompt.posy,prompt.posx);
     box(prompt.window,0,0);
 }
 
 int write_to_prompt(wint_t key)
 {
-    wchar_t glyph[] = { (wchar_t)key, 0 };
-    waddwstr(prompt.window, glyph);
+    /* wchar_t glyph[] = { (wchar_t)key, 0 }; */
+
+    if(prompt.buf_pos == buf_len-1){
+        *(prompt.buffer + prompt.buf_pos) = key;
+        *(prompt.buffer + buf_len) = (wchar_t)'\0';
+    }else{
+        *(prompt.buffer + prompt.buf_pos) = key;
+        prompt.buf_pos++;
+        *(prompt.buffer + prompt.buf_pos) = (wchar_t)'\0';
+    }
+    
+    mvwaddwstr(prompt.window, 1,1, prompt.buffer);
     wrefresh(prompt.window);
+
+    /* TODO: return something meaningful */
+    return(0);
 }
 
 void refresh_x3(void)
@@ -191,9 +226,9 @@ void refresh_x3(void)
     refresh();
 /* prefresh(pad, pad_y, pad_x, TOPLEFT_y, TOPLEFT_x, BOTRIGHT_y BOTRIGHT_x) */
     prefresh(textview.window,0,0,
-             H_OFFSET(textview.height,3), 
-                     ((STD_X/2)-(WIDTH/2))+1,
-             H_OFFSET(textview.height,3)+textview.height,
-                     ((STD_X/2)-(WIDTH/2))+WIDTH-2 );
+             h_offset(textview.height,3), 
+                     ((std_x/2)-(WIDTH/2))+1,
+             h_offset(textview.height,3)+textview.height,
+                     ((std_x/2)-(WIDTH/2))+WIDTH-2 );
     wrefresh(prompt.window);
 }
