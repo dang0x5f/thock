@@ -81,7 +81,10 @@ int get_key(void)
 
     // TODO: determine fate of function keys
     if(key == '\033'){            
-        while(rc != ERR) rc = get_wch(&key);
+        flushinp();
+        /* while(rc != ERR){ */
+        /*     rc = wget_wch(prompt.window,&key); */
+        /* } */
     }
 
     switch(rc){
@@ -179,7 +182,7 @@ void init_prompt(void)
 int write_to_prompt(wint_t key)
 {
     wchar_t glyph[] = { (wchar_t)key, 0 };
-    waddwstr(prompt.window,glyph);
+    waddwstr(prompt.window, glyph);
     wrefresh(prompt.window);
 }
 
