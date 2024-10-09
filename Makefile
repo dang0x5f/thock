@@ -28,9 +28,9 @@ todo:
 	grep -rn TODO
 
 tags:
-	uctags *.h *.c
+	rm tags && uctags *.h *.c
 
 clean:
-	rm -f ${BIN} *.o *.d *.core tags
+	rm -f ${BIN} *.o *.d *.core
 
-.PHONY: clean
+.PHONY: clean tags

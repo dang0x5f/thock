@@ -25,6 +25,7 @@ typedef struct {
     int rheight;  // real height
     int offset;
     wchar_t* wordset;
+    int wordset_len;
 } TextView;
 
 typedef struct {
@@ -52,8 +53,8 @@ void init_ncurses(void)
 
     box(stdscr,0,0);
 
-    init_textview(1);
-    init_prompt();
+    init_textview(0);
+    init_prompt_window();
 
     refresh_x3();
 }
@@ -114,7 +115,7 @@ void evaluate_key(wint_t key)
 {
     switch(key){
         case KEY_RESIZE:
-            redraw_all(textview.rheight);
+            redraw_all();
             break;
         case KEY_BACKSPACE:
             if(prompt.buf_pos > 0){
@@ -129,20 +130,19 @@ void evaluate_key(wint_t key)
     }
 }
 
-void redraw_all(int h)
+void redraw_all(void)
 {
     delwin(textview.window);
-    /* if(prompt.buffer) free(prompt.buffer); */
     delwin(prompt.window);
     reset_ncurses();
 
     box(stdscr,0,0);
     refresh();
 
-    init_textview(h);
-    init_prompt();
+    reinit_textview();
+    reinit_prompt_window();
 
-    write_to_textview(textview.wordset,wcslen(textview.wordset));
+    restore_wordset_buffer_data();
 }
 
 void init_textview(int newlines)
@@ -151,7 +151,18 @@ void init_textview(int newlines)
     textview.height = (newlines + 1) > MAX_HEIGHT ? MAX_HEIGHT : newlines + 1;
     textview.window = newpad(textview.height,WIDTH);
 }
-
+void reinit_textview(void)
+{
+    textview.window = newpad(textview.height,WIDTH);
+}
+void reinit_prompt_window(void)
+{
+    prompt.window = newwin(3,WIDTH,
+                           h_offset(textview.height,3)+textview.height,
+                           (std_x/2)-(WIDTH/2));
+    keypad(prompt.window,TRUE);
+    box(prompt.window,0,0);
+}
 
 void load_wordset_textview(wchar_t* wordset, int height)
 {
@@ -167,23 +178,24 @@ void load_wordset_textview(wchar_t* wordset, int height)
     box(stdscr,0,0);
 
     init_textview(height);
-    init_prompt();
+    init_prompt_window();
 
     if(textview.wordset) free(textview.wordset);
-    textview.wordset = malloc((wcslen(wordset)+1) * sizeof(wchar_t));
+    textview.wordset_len = wcslen(wordset);
+    textview.wordset = malloc((textview.wordset_len+1) * sizeof(wchar_t));
     wcscpy(textview.wordset,wordset);
-    
-    write_to_textview(textview.wordset,height);
+
+    write_to_textview(textview.wordset);
 }
 
-int write_to_textview(wchar_t* wordset, int size)
+int write_to_textview(wchar_t* wordset)
 {
     int x,y;
     getyx(prompt.window,y,x); 
 
     wmove(textview.window,0,0);
 
-    for(int x = 0; x < size; x++){
+    for(int x = 0; x < textview.wordset_len; x++){
         waddch(textview.window,*(wordset+x));
     }
     wmove(prompt.window,y,x);
@@ -194,24 +206,30 @@ int write_to_textview(wchar_t* wordset, int size)
     return(0);
 }
 
-void init_prompt(void)
+void init_prompt_window(void)
 {
     prompt.window = newwin(3,WIDTH,
                            h_offset(textview.height,3)+textview.height,
                            (std_x/2)-(WIDTH/2));
     keypad(prompt.window,TRUE);
-    prompt.posy = 1;
-    prompt.posx = 1;
+    box(prompt.window,0,0);
+
+    init_prompt_attributes();
+
+    wmove(prompt.window,prompt.posy,prompt.posx);
+}
+
+void init_prompt_attributes(void)
+{
     prompt.buffer = malloc( (buf_len+1)*sizeof(wchar_t) );
     prompt.buf_pos = 0;
-    wmove(prompt.window,prompt.posy,prompt.posx);
-    box(prompt.window,0,0);
+
+    prompt.posy = 1;
+    prompt.posx = 1;
 }
 
 int write_to_prompt(wint_t key)
 {
-    /* wchar_t glyph[] = { (wchar_t)key, 0 }; */
-
     if(prompt.buf_pos == buf_len-1){
         *(prompt.buffer + prompt.buf_pos) = key;
         *(prompt.buffer + buf_len) = (wchar_t)'\0';
@@ -238,4 +256,15 @@ void refresh_x3(void)
              h_offset(textview.height,3)+textview.height,
                      ((std_x/2)-(WIDTH/2))+WIDTH-2 );
     wrefresh(prompt.window);
+}
+
+void restore_wordset_buffer_data(void)
+{
+    for(int x = 0; x < textview.wordset_len; x++){
+        waddch(textview.window,*(textview.wordset+x));
+    }
+    
+    mvwaddwstr(prompt.window, 1,1, prompt.buffer);
+
+    refresh_x3();
 }

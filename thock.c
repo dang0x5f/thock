@@ -53,8 +53,6 @@ int request_wordset(wchar_t* wordset)
     }
 
     load_wordset_textview(wordset,size);
-    /* TODO: newlines = size / width; */ 
-    /* TODO: format temp_wordset -> wordset, free temp_wordset */
     free(wordset);
 
     return size;
