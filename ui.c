@@ -4,6 +4,7 @@
 #include <locale.h>
 
 #include "ui.h"
+#include "util.h"
 #include "config.h"
 
 #define WIDTH 50
@@ -76,7 +77,7 @@ void exit_ncurses(void)
     endwin();
 }
 
-int get_key(void)
+int get_key(uint8_t* wordset_state)
 {
     int rc;
     wint_t key;
@@ -89,12 +90,8 @@ int get_key(void)
     }
 
     // TODO: determine fate of function keys
-    if(key == '\033'){            
-        flushinp(); // flush eats remaining function characters
-        /* while(rc != ERR){ */
-        /*     rc = wget_wch(prompt.window,&key); */
-        /* } */
-    }
+    if(key == KEY_ESC)
+        flushinp(); // eats remaining function characters
 
     switch(rc){
         case OK:
@@ -137,7 +134,6 @@ void redraw_all(void)
     reset_ncurses();
 
     box(stdscr,0,0);
-    refresh();
 
     reinit_textview();
     reinit_prompt_window();
@@ -151,10 +147,12 @@ void init_textview(int newlines)
     textview.height = (newlines + 1) > MAX_HEIGHT ? MAX_HEIGHT : newlines + 1;
     textview.window = newpad(textview.height,WIDTH);
 }
+
 void reinit_textview(void)
 {
     textview.window = newpad(textview.height,WIDTH);
 }
+
 void reinit_prompt_window(void)
 {
     prompt.window = newwin(3,WIDTH,
@@ -164,7 +162,7 @@ void reinit_prompt_window(void)
     box(prompt.window,0,0);
 }
 
-void load_wordset_textview(wchar_t* wordset, int height)
+void load_wordset_textview(wchar_t* wordset, int wordset_len, uint8_t* wordset_state)
 {
     if(textview.window != NULL)
         delwin(textview.window);
@@ -176,8 +174,7 @@ void load_wordset_textview(wchar_t* wordset, int height)
 
     clear();
     box(stdscr,0,0);
-
-    init_textview(height);
+    init_textview(wordset_len/WIDTH);
     init_prompt_window();
 
     if(textview.wordset) free(textview.wordset);
@@ -185,10 +182,12 @@ void load_wordset_textview(wchar_t* wordset, int height)
     textview.wordset = malloc((textview.wordset_len+1) * sizeof(wchar_t));
     wcscpy(textview.wordset,wordset);
 
-    write_to_textview(textview.wordset);
+    init_wordset_state(wordset,wordset_state,textview.wordset_len);
+
+    write_to_textview(textview.wordset,wordset_state);
 }
 
-int write_to_textview(wchar_t* wordset)
+int write_to_textview(wchar_t* wordset, uint8_t* wordset_state)
 {
     int x,y;
     getyx(prompt.window,y,x); 
@@ -196,7 +195,13 @@ int write_to_textview(wchar_t* wordset)
     wmove(textview.window,0,0);
 
     for(int x = 0; x < textview.wordset_len; x++){
-        waddch(textview.window,*(wordset+x));
+        /* TODO: this needs to output wchar */
+        /* waddwstr(textview.window,(wordset+x)); */
+        if( *(wordset_state+x) == CURSOR)
+            waddch(textview.window, WA_REVERSE | *(wordset+x));
+        else
+            waddch(textview.window, *(wordset+x));
+
     }
     wmove(prompt.window,y,x);
 

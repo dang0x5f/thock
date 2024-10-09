@@ -1,21 +1,23 @@
 #ifndef UI_H
 #define UI_H
 
+#include <stdint.h>
 #include <wchar.h>
 
-#define KEY_ESC 27
+#define KEY_ESC '\033'
+#define KEY_SPC '\040'
 
 void init_ncurses(void);
 void reset_ncurses(void);
 void exit_ncurses(void);
 
-int get_key(void);
+int get_key(uint8_t*);
 void evaluate_key(wint_t);
 void redraw_all(void);
 
 void init_textview(int);
-void load_wordset_textview(wchar_t*,int);
-int write_to_textview(wchar_t*);
+void load_wordset_textview(wchar_t*,int,uint8_t*);
+int write_to_textview(wchar_t*,uint8_t*);
 
 void init_prompt_window(void);
 void init_prompt_attributes(void);

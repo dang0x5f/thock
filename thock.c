@@ -1,61 +1,40 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
+/* #include <stdlib.h> */
+/* #include <errno.h> */
+#include <stdint.h>
 
-#include "thock.h"
 #include "ui.h"
-#include "mods.h"
-
-enum char_status {
-    CURSOR,
-    EMPTY,
-    CORRECT,
-    INCORRECT,
-    LOCKED,
-    UNLOCKED
-};
-
-int request_wordset(wchar_t*);
+#include "util.h"
 
 int main(void)
 {
+    int action = 0;
     int size = 0;
-    wchar_t key = 0;
-    wchar_t* wordset = NULL;
-    int* wordset_state = NULL;
+    uint8_t* wordset_state = NULL;
+    uint32_t wordset_length = 0;
 
     init_ncurses();
     
-    size = request_wordset(wordset);
+    request_wordset(wordset_state, &wordset_length);
     while(1){
-        key  = get_key();
+        action = get_key(wordset_state);
+        
+/*
+        switch(action){
+            case QUIT_ACTION:
+                back out;
+                break;
+            case REQUEST_ACTION:
+                request new wordset;
+                break;
+            case CONTINUE_ACTION:
+                check wordset_state;
+                break;
+        }
+*/
 
     }
-
-    exit_ncurses();
 
     return(0);
-}
-
-int request_wordset(wchar_t* wordset)
-{
-    int size = 0;
-
-    if(wordset) free(wordset);
-
-    wordset = modules[0].get_wordset(&size);    
-
-    if(wordset == NULL){
-        exit_ncurses();
-        fprintf(stderr, "Error allocating wordset: %s\n", strerror(errno));
-        exit(0);
-    }
-
-    load_wordset_textview(wordset,size);
-    free(wordset);
-
-    return size;
 }
 
 /*

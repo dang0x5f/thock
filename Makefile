@@ -6,7 +6,7 @@ LDLIBS := -lncursesw
 
 BIN  := prog
 
-SRCS := thock.c ui.c 
+SRCS := thock.c ui.c util.c
 OBJS := ${SRCS:c=o}
 
 MOD_SRCS := ${SRCS} dictmod.c
