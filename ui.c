@@ -9,11 +9,11 @@
 #define WIDTH 50
 #define MAX_HEIGHT 5
 
+#define std_x               ( getmaxx(stdscr) )
+#define std_y               ( getmaxy(stdscr) )
 #define buf_len             ( WIDTH - 2 )
 
 #define ctrl(x)             ( (x) & 0x1F )
-#define std_x               ( getmaxx(stdscr) )
-#define std_y               ( getmaxy(stdscr) )
 #define h_offset(tv_h,pw_h) ( ((std_y)-(tv_h+pw_h)) / 2 )
 
 /* TODO: rename attributes */
@@ -24,6 +24,7 @@ typedef struct {
     int height;   // visible height
     int rheight;  // real height
     int offset;
+    wchar_t* wordset;
 } TextView;
 
 typedef struct {
@@ -131,7 +132,7 @@ void evaluate_key(wint_t key)
 void redraw_all(int h)
 {
     delwin(textview.window);
-    if(prompt.buffer) free(prompt.buffer);
+    /* if(prompt.buffer) free(prompt.buffer); */
     delwin(prompt.window);
     reset_ncurses();
 
@@ -140,6 +141,8 @@ void redraw_all(int h)
 
     init_textview(h);
     init_prompt();
+
+    write_to_textview(textview.wordset,wcslen(textview.wordset));
 }
 
 void init_textview(int newlines)
@@ -150,7 +153,7 @@ void init_textview(int newlines)
 }
 
 
-void load_wordset_textview(char* wordset, int height)
+void load_wordset_textview(wchar_t* wordset, int height)
 {
     if(textview.window != NULL)
         delwin(textview.window);
@@ -166,10 +169,14 @@ void load_wordset_textview(char* wordset, int height)
     init_textview(height);
     init_prompt();
 
-    write_to_textview(wordset,height);
+    if(textview.wordset) free(textview.wordset);
+    textview.wordset = malloc((wcslen(wordset)+1) * sizeof(wchar_t));
+    wcscpy(textview.wordset,wordset);
+    
+    write_to_textview(textview.wordset,height);
 }
 
-int write_to_textview(char* wordset, int size)
+int write_to_textview(wchar_t* wordset, int size)
 {
     int x,y;
     getyx(prompt.window,y,x); 
@@ -195,7 +202,7 @@ void init_prompt(void)
     keypad(prompt.window,TRUE);
     prompt.posy = 1;
     prompt.posx = 1;
-    prompt.buffer = malloc( (buf_len+1)*sizeof(char) );
+    prompt.buffer = malloc( (buf_len+1)*sizeof(wchar_t) );
     prompt.buf_pos = 0;
     wmove(prompt.window,prompt.posy,prompt.posx);
     box(prompt.window,0,0);

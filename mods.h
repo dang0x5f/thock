@@ -6,11 +6,11 @@
 
 Module modules[] = {
 
-    { "DefaultText" , get_default_wordset }
+    { L"DefaultText" , get_default_wordset }
     ,
 
 #ifdef WITH_MODS
-    { "DictionaryMod" , get_random_wordset }
+    { L"DictionaryMod" , get_random_wordset }
     ,
 #endif
 

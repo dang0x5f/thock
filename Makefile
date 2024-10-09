@@ -27,7 +27,10 @@ mods:
 todo:
 	grep -rn TODO
 
+tags:
+	uctags *.h *.c
+
 clean:
-	rm -f ${BIN} *.o *.d *.core
+	rm -f ${BIN} *.o *.d *.core tags
 
 .PHONY: clean

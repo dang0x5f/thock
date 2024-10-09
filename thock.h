@@ -2,8 +2,8 @@
 #define THOCK_H
 
 typedef struct {
-    char* name;
-    char* (*get_wordset)(int*);
+    wchar_t* name;
+    wchar_t* (*get_wordset)(int*);
 } Module;
 
 extern Module modules[];

@@ -16,13 +16,14 @@ enum char_status {
     UNLOCKED
 };
 
-int request_wordset(char*);
+int request_wordset(wchar_t*);
 
 int main(void)
 {
     int size = 0;
     wchar_t key = 0;
-    char* wordset = NULL;
+    wchar_t* wordset = NULL;
+    int* wordset_state = NULL;
 
     init_ncurses();
     
@@ -37,7 +38,7 @@ int main(void)
     return(0);
 }
 
-int request_wordset(char* wordset)
+int request_wordset(wchar_t* wordset)
 {
     int size = 0;
 
@@ -54,6 +55,7 @@ int request_wordset(char* wordset)
     load_wordset_textview(wordset,size);
     /* TODO: newlines = size / width; */ 
     /* TODO: format temp_wordset -> wordset, free temp_wordset */
+    free(wordset);
 
     return size;
 }
