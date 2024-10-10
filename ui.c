@@ -141,10 +141,11 @@ void redraw_all(void)
     restore_wordset_buffer_data();
 }
 
-void init_textview(int newlines)
+void init_textview(int rows)
 {
-    textview.rheight = newlines;
-    textview.height = (newlines + 1) > MAX_HEIGHT ? MAX_HEIGHT : newlines + 1;
+    textview.rheight = rows;
+    // +1 row index starts at 0
+    textview.height = (rows+1) > MAX_HEIGHT ? MAX_HEIGHT : rows+1; 
     textview.window = newpad(textview.height,WIDTH);
 }
 
