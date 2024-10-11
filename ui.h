@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <wchar.h>
 
-#define KEY_ESC '\033'
-#define KEY_SPC '\040'
+#define KEY_ESCAPE '\033'
+#define KEY_SPACE  '\040'
 
 bool initialize_stdscr(void);
 bool initialize_wordset(void);
@@ -21,8 +21,13 @@ void draw_textview(void);
 void draw_textview_wordset(void);
 void draw_prompt(void);
 
+wint_t get_keycode(void);
+void do_resize(void);
+
+void free_stdscr(void);
 void free_wordset(void);
 void free_textview(void);
+void free_buffer(void);
 void free_prompt(void);
 
 /* void init_ncurses(void); */

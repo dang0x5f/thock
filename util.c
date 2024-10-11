@@ -5,6 +5,8 @@
 /* #include <errno.h> */
 #include <stdbool.h>
 
+#define ctrl(x)             ( (x) & 0x1F )
+
 #include "ui.h"
 #include "util.h"
 #include "mods.h"
@@ -48,6 +50,32 @@ bool initialize_interface(void)
     return(true);
 }
 
+SessionTask retrieve_task(void)
+{
+    SessionTask task = SESSION_NOTASK;
+
+    wint_t keycode = get_keycode();
+    switch(keycode){
+        case ctrl('g'):
+            task = SESSION_RUN;
+            break;
+        case ctrl('x'):
+            task = SESSION_END;
+            break;
+        case WEOF:
+            // handled internal to ui
+            break;
+    }
+
+    return(task);
+}
+
+/* TODO: probably will be returning task */
+bool run(void)
+{
+    return(true);
+}
+
 /* TODO: bit field to decide which windows to draw */
 void draw(void)
 {
@@ -56,6 +84,14 @@ void draw(void)
     draw_prompt();
 }
 
+void exit_program(void)
+{
+    free_wordset();
+    free_textview();
+    free_buffer();
+    free_prompt();
+    free_stdscr();
+}
 
 
 

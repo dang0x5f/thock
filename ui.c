@@ -10,14 +10,12 @@
 #define WIDTH 50
 #define MAX_HEIGHT 5
 
-#define std_x               ( getmaxx(stdscr) )
-#define std_y               ( getmaxy(stdscr) )
-#define buf_len             ( WIDTH - 2 )
+#define buf_len    ( WIDTH - 2 )
 
-#define ctrl(x)             ( (x) & 0x1F )
-#define h_offset(h1,h2)     ( ((std_y)-(h1 + h2)) / 2 )
-/* #define y_offset            ( ((std_y)-(textview.rows + prompt.rows)) / 2 ) */
-/* #define x_offset            ( (std_x/2)-(WIDTH/2) ) */
+#define STD_X      ( getmaxx(stdscr) )
+#define STD_Y      ( getmaxy(stdscr) )
+#define X_OFFSET   ( (STD_X / 2) - (WIDTH / 2) )
+#define Y_OFFSET   ( (STD_Y - (textview.rows + prompt.rows) ) / 2 )
 
 
 typedef struct {
@@ -93,7 +91,7 @@ bool initialize_wordset(void)
 
 bool initialize_wordset_state(void)
 {
-    int index = 0;
+    uint32_t index = 0;
     wchar_t* iter = wordset.text;
 
     while(index < wordset.text_length){
@@ -157,9 +155,8 @@ bool initialize_prompt(void)
         return(false);
     }
 
-    /* TODO: (std_x/2)-(WIDTH/2) could be x_offset */
     prompt.win = newwin(prompt.rows, prompt.cols,
-                        h_offset(textview.rows,prompt.rows)+textview.rows,(std_x/2)-(WIDTH/2));
+                        Y_OFFSET+textview.rows, X_OFFSET);
     if(!prompt.win){
         endwin();
         fprintf(stderr,"prompt.win null");
@@ -187,18 +184,16 @@ void draw_textview(void)
     /* prefresh(WINDOW* pad, int pad_y, int pad_x, int topleft_y, 
      *          int topleft_x, int botright_y, int botright_x) */
     prefresh(textview.win , textview.offset , 0 , 
-             h_offset(textview.rows,prompt.rows)               , 
-             ( (std_x/2)-(WIDTH/2) ) + 1                       ,
-             h_offset(textview.rows,prompt.rows)+textview.rows , 
-             ( (std_x/2)-(WIDTH/2) ) + WIDTH-2                 );
+             Y_OFFSET , X_OFFSET + 1 ,
+             Y_OFFSET + textview.rows , X_OFFSET + (WIDTH-2) );
 
 }
 
 void draw_textview_wordset(void)
 {
+    /* TODO: this needs to output wchar */
     waddwstr(textview.win, wordset.text);
     /* for(int x = 0; x < wordset.text_length; x++){ */
-        /* TODO: this needs to output wchar */
         /* if( *(wordset.text_state+x) == WC_CURSOR) */
         /*     waddch(textview.win, WA_REVERSE | *(wordset.text+x)); */
         /* else */
@@ -208,14 +203,63 @@ void draw_textview_wordset(void)
 void draw_prompt(void)
 {
     wrefresh(prompt.win);
-    getch();
-    
-/* TODO: delete later, good debug though */
-    /* clear(); */
-    /* endwin(); */
-    /* fprintf(stderr," %d %d %d\n", textview.rows, prompt.rows, h_offset(textview.rows,prompt.rows)); */
 }
 
+wint_t get_keycode(void)
+{
+    wint_t key;
+    if(wget_wch(prompt.win,&key)==ERR)
+        return(WEOF);
+
+    switch(key){
+        case KEY_RESIZE:
+            do_resize();
+            key = WEOF;
+            break;
+        case KEY_ESCAPE:
+            flushinp();
+            key = WEOF;
+            break;
+    }
+    return(key);
+}
+
+/* TODO: clean this up a bit */
+void do_resize(void){
+    free_textview();
+    free_prompt();
+    free_stdscr();
+
+    box(stdscr,0,0);
+
+    textview.win = newpad(textview.total_rows, WIDTH);
+    if(textview.win == NULL){
+        endwin();
+        fprintf(stderr, "textview.win null\n");
+        /* return(false); */
+    }
+
+    prompt.win = newwin(prompt.rows, prompt.cols,
+                        Y_OFFSET + textview.rows, X_OFFSET);
+    if(!prompt.win){
+        endwin();
+        fprintf(stderr,"prompt.win null");
+        /* return(false); */
+    }
+    keypad(prompt.win,TRUE);
+    box(prompt.win,0,0);
+
+    draw_stdscr();
+    draw_textview();
+    draw_prompt();
+}
+
+void free_stdscr(void)
+{
+    clear();
+    endwin();
+    /* refresh(); */
+}
 
 void free_wordset(void)
 {
@@ -228,12 +272,15 @@ void free_textview(void)
     delwin(textview.win);
 }
 
-void free_prompt(void)
+void free_buffer(void)
 {
     free(prompt.buffer);
-    delwin(prompt.win);
 }
 
+void free_prompt(void)
+{
+    delwin(prompt.win);
+}
 
 // ---------------------------------------------------------------
 

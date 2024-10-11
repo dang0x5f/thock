@@ -10,7 +10,7 @@ typedef enum {
     SESSION_STATS,
     SESSION_MODULES,
     SESSION_END
-} task_t;
+} SessionTask;
 
 typedef enum {
     WC_CURSOR,
@@ -20,7 +20,7 @@ typedef enum {
     WC_CHECKPOINT_OFF,
     WC_OUT_OF_REACH,
     WC_NEWLINE
-} wcstate_t;
+} WCState;
 
 typedef struct {
     wchar_t* name;
@@ -32,6 +32,11 @@ extern Module modules[];
 bool initialize_program(void);
 bool initialize_interface(void);
 
+SessionTask retrieve_task(void);
+
+bool run(void);
 void draw(void);
+
+void exit_program(void);
 
 #endif // UTIL_H

@@ -18,7 +18,7 @@
 int main(void)
 {
     bool end_session = false;
-    task_t task = SESSION_NOTASK;
+    SessionTask task = SESSION_NOTASK;
 
     if(!initialize_program()){
         fprintf(stderr,"initialize_program()\n");
@@ -31,12 +31,15 @@ int main(void)
     }
 
     draw();
-
     while(!end_session){
-        /* task = retieve_task(); */
+        task = retrieve_task();
         switch(task){
+            case SESSION_NOTASK:
+                /* draw(); */
+                break;
             case SESSION_RUN:
-                /* run(); */
+                end_session = run();
+                break;
             case SESSION_STATS:
                 //show_stats();
                 break;
@@ -46,12 +49,11 @@ int main(void)
             case SESSION_END:
                 end_session = true;
                 break;
-            case SESSION_NOTASK:
-                draw();
-                break;
         }
     }
     
+    exit_program();
+
     /* show_stats(); */
 
     exit(EXIT_SUCCESS);
