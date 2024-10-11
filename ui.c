@@ -16,6 +16,8 @@
 
 #define ctrl(x)             ( (x) & 0x1F )
 #define h_offset(h1,h2)     ( ((std_y)-(h1 + h2)) / 2 )
+/* #define y_offset            ( ((std_y)-(textview.rows + prompt.rows)) / 2 ) */
+/* #define x_offset            ( (std_x/2)-(WIDTH/2) ) */
 
 
 typedef struct {
@@ -142,8 +144,8 @@ bool initialize_textview(void)
 
 bool initialize_prompt(void)
 {
-    prompt.cols = 3;
-    prompt.rows = WIDTH;
+    prompt.cols = WIDTH;
+    prompt.rows = 3;
     prompt.xpos = 1;
     prompt.ypos = 1;
 
@@ -156,7 +158,7 @@ bool initialize_prompt(void)
     }
 
     /* TODO: (std_x/2)-(WIDTH/2) could be x_offset */
-    prompt.win = newwin(prompt.cols, prompt.rows,
+    prompt.win = newwin(prompt.rows, prompt.cols,
                         h_offset(textview.rows,prompt.rows)+textview.rows,(std_x/2)-(WIDTH/2));
     if(!prompt.win){
         endwin();
@@ -181,15 +183,37 @@ void draw_stdscr(void)
 
 void draw_textview(void)
 {
-    /* prefresh(WINDOW* pad, pad_y, pad_x, TOPLEFT_y, TOPLEFT_x, BOTRIGHT_y BOTRIGHT_x) */
-    prefresh(textview.win, textview.offset, 0, 
-             h_offset(textview.rows,prompt.rows)               , ( (std_x/2)-(WIDTH/2) )+1,
-             h_offset(textview.rows,prompt.rows)+textview.rows , ( (std_x/2)-(WIDTH/2) )+WIDTH-2 );
+    draw_textview_wordset();
+    /* prefresh(WINDOW* pad, int pad_y, int pad_x, int topleft_y, 
+     *          int topleft_x, int botright_y, int botright_x) */
+    prefresh(textview.win , textview.offset , 0 , 
+             h_offset(textview.rows,prompt.rows)               , 
+             ( (std_x/2)-(WIDTH/2) ) + 1                       ,
+             h_offset(textview.rows,prompt.rows)+textview.rows , 
+             ( (std_x/2)-(WIDTH/2) ) + WIDTH-2                 );
+
+}
+
+void draw_textview_wordset(void)
+{
+    waddwstr(textview.win, wordset.text);
+    /* for(int x = 0; x < wordset.text_length; x++){ */
+        /* TODO: this needs to output wchar */
+        /* if( *(wordset.text_state+x) == WC_CURSOR) */
+        /*     waddch(textview.win, WA_REVERSE | *(wordset.text+x)); */
+        /* else */
+        /*     waddch(textview.win, *(wordset.text+x)); */
 }
 
 void draw_prompt(void)
 {
     wrefresh(prompt.win);
+    getch();
+    
+/* TODO: delete later, good debug though */
+    /* clear(); */
+    /* endwin(); */
+    /* fprintf(stderr," %d %d %d\n", textview.rows, prompt.rows, h_offset(textview.rows,prompt.rows)); */
 }
 
 

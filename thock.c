@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <errno.h>
 
 #include "util.h"
@@ -16,6 +17,9 @@
 
 int main(void)
 {
+    bool end_session = false;
+    task_t task = SESSION_NOTASK;
+
     if(!initialize_program()){
         fprintf(stderr,"initialize_program()\n");
         exit(EXIT_FAILURE);
@@ -26,14 +30,13 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
-/*
-    load();
+    draw();
 
     while(!end_session){
-        task = retieve_task();
+        /* task = retieve_task(); */
         switch(task){
             case SESSION_RUN:
-                run();
+                /* run(); */
             case SESSION_STATS:
                 //show_stats();
                 break;
@@ -41,11 +44,13 @@ int main(void)
                 //view_modules();
                 break;
             case SESSION_END:
-                end_session = 0;
+                end_session = true;
+                break;
+            case SESSION_NOTASK:
+                draw();
                 break;
         }
     }
-*/
     
     /* show_stats(); */
 

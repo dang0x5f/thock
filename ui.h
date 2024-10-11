@@ -18,6 +18,7 @@ bool initialize_prompt(void);
 
 void draw_stdscr(void);
 void draw_textview(void);
+void draw_textview_wordset(void);
 void draw_prompt(void);
 
 void free_wordset(void);

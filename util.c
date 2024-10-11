@@ -48,7 +48,13 @@ bool initialize_interface(void)
     return(true);
 }
 
-
+/* TODO: bit field to decide which windows to draw */
+void draw(void)
+{
+    draw_stdscr();
+    draw_textview();
+    draw_prompt();
+}
 
 
 

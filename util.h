@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 typedef enum {
+    SESSION_NOTASK,
     SESSION_RUN,
     SESSION_STATS,
     SESSION_MODULES,
@@ -31,5 +32,6 @@ extern Module modules[];
 bool initialize_program(void);
 bool initialize_interface(void);
 
+void draw(void);
 
 #endif // UTIL_H
