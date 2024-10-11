@@ -25,7 +25,7 @@ mods:
 # 	${CC} ${OBJS} -o ${BIN}
 
 todo:
-	grep -rn TODO
+	grep -rn TODO --exclude-dir=.git --exclude "Makefile"
 
 tags:
 	rm tags && uctags *.h *.c

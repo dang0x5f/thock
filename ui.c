@@ -331,7 +331,6 @@ void free_prompt(void)
 /*         exit(0); */
 /*     } */
 
-    // TODO: determine fate of function keys
     /* if(key == KEY_ESC) */
         /* flushinp(); // eats remaining function characters */
 
@@ -346,7 +345,6 @@ void free_prompt(void)
     /*         break; */
     /* } */
 
-    /* /1* TODO: return something meaningful *1/ */
     /* return(0); */
 /* } */
 
@@ -438,7 +436,6 @@ void free_prompt(void)
 /*     wmove(textview.window,0,0); */
 
 /*     for(int x = 0; x < textview.wordset_len; x++){ */
-/*         /1* TODO: this needs to output wchar *1/ */
 /*         /1* waddwstr(textview.window,(wordset+x)); *1/ */
 /*         if( *(wordset_state+x) == CURSOR) */
 /*             waddch(textview.window, WA_REVERSE | *(wordset+x)); */
@@ -450,7 +447,6 @@ void free_prompt(void)
 
 /*     refresh_x3(); */
 
-/*     /1* TODO: return something meaningful *1/ */
 /*     return(0); */
 /* } */
 
@@ -490,7 +486,6 @@ void free_prompt(void)
 /*     mvwaddwstr(prompt.window, 1,1, prompt.buffer); */
 /*     wrefresh(prompt.window); */
 
-/*     /1* TODO: return something meaningful *1/ */
 /*     return(0); */
 /* } */
 
