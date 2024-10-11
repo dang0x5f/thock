@@ -1,25 +1,35 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
-enum char_status {
-    CURSOR,
-    EMPTY,
-    CORRECT,
-    INCORRECT,
-    LOCKED,
-    UNLOCKED
-};
+typedef enum {
+    SESSION_RUN,
+    SESSION_STATS,
+    SESSION_MODULES,
+    SESSION_END
+} task_t;
+
+typedef enum {
+    WC_CURSOR,
+    WC_CORRECT,
+    WC_INCORRECT,
+    WC_CHECKPOINT_ON,
+    WC_CHECKPOINT_OFF,
+    WC_OUT_OF_REACH,
+    WC_NEWLINE
+} wcstate_t;
 
 typedef struct {
     wchar_t* name;
-    wchar_t* (*get_wordset)(int*);
+    wchar_t* (*get_wordset)(uint32_t*);
 } Module;
 
 extern Module modules[];
 
-void request_wordset(uint8_t*,uint32_t*);
-void init_wordset_state(wchar_t*,uint8_t*,uint32_t);
+bool initialize_program(void);
+bool initialize_interface(void);
+
 
 #endif // UTIL_H
