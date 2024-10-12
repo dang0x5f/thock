@@ -24,7 +24,10 @@ void draw_prompt(void);
 wint_t get_keycode(void);
 void do_resize(void);
 
-void free_stdscr(void);
+bool too_small(void);
+
+void free_stdscr_resize(void);
+void free_stdscr_exit(void);
 void free_wordset(void);
 void free_textview(void);
 void free_buffer(void);

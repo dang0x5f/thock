@@ -90,7 +90,7 @@ void exit_program(void)
     free_textview();
     free_buffer();
     free_prompt();
-    free_stdscr();
+    free_stdscr_exit();
 }
 
 

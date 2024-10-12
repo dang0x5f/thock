@@ -43,7 +43,6 @@ typedef struct {
 } Prompt;
 
 
-
 /* Globals */
 static TextView textview;
 static Wordset  wordset;
@@ -172,7 +171,6 @@ bool initialize_prompt(void)
     return(true);
 }
 
-
 void draw_stdscr(void)
 {
     wrefresh(stdscr);
@@ -228,37 +226,57 @@ wint_t get_keycode(void)
 void do_resize(void){
     free_textview();
     free_prompt();
-    free_stdscr();
+    free_stdscr_resize();
 
-    box(stdscr,0,0);
+    if(too_small()){
+        /* box(stdscr,0,0); */
+        mvaddstr(1,1,"too smol..");
+        draw_stdscr();
+    }else{
+        box(stdscr,0,0);
 
-    textview.win = newpad(textview.total_rows, WIDTH);
-    if(textview.win == NULL){
-        endwin();
-        fprintf(stderr, "textview.win null\n");
-        /* return(false); */
+        textview.win = newpad(textview.total_rows, WIDTH);
+        if(textview.win == NULL){
+            endwin();
+            fprintf(stderr, "textview.win null\n");
+            /* return(false); */
+        }
+
+        prompt.win = newwin(prompt.rows, prompt.cols,
+                            Y_OFFSET + textview.rows, X_OFFSET);
+        if(!prompt.win){
+            endwin();
+            fprintf(stderr,"prompt.win null");
+            /* return(false); */
+        }
+        keypad(prompt.win,TRUE);
+        box(prompt.win,0,0);
+
+        draw_stdscr();
+        draw_textview();
+        draw_prompt();
     }
-
-    prompt.win = newwin(prompt.rows, prompt.cols,
-                        Y_OFFSET + textview.rows, X_OFFSET);
-    if(!prompt.win){
-        endwin();
-        fprintf(stderr,"prompt.win null");
-        /* return(false); */
-    }
-    keypad(prompt.win,TRUE);
-    box(prompt.win,0,0);
-
-    draw_stdscr();
-    draw_textview();
-    draw_prompt();
 }
 
-void free_stdscr(void)
+bool too_small(void)
 {
-    clear();
+    if( STD_X < (WIDTH+4) || STD_Y < ((textview.rows + prompt.rows)+4) )
+        return(true);
+    else
+        return(false);
+}
+
+void free_stdscr_resize(void)
+{
     endwin();
-    /* refresh(); */
+    refresh();
+    clear();
+}
+
+void free_stdscr_exit(void)
+{
+    endwin();
+    clear();
 }
 
 void free_wordset(void)
@@ -269,6 +287,7 @@ void free_wordset(void)
 
 void free_textview(void)
 {
+    wclear(textview.win);
     delwin(textview.win);
 }
 
@@ -279,6 +298,7 @@ void free_buffer(void)
 
 void free_prompt(void)
 {
+    wclear(prompt.win);
     delwin(prompt.win);
 }
 
