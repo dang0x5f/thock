@@ -13,6 +13,12 @@ typedef enum {
 } SessionTask;
 
 typedef enum {
+    SET_NOTASK,
+    SET_RELOAD,
+    SET_END
+} SetTask;
+
+typedef enum {
     WC_CURSOR,
     WC_CORRECT,
     WC_INCORRECT,
@@ -32,9 +38,10 @@ extern Module modules[];
 bool initialize_program(void);
 bool initialize_interface(void);
 
-SessionTask retrieve_task(void);
+SessionTask retrieve_session_task(void);
+SetTask retrieve_set_task(void);
 
-bool run(void);
+void thock(void);
 void draw(void);
 
 void exit_program(void);

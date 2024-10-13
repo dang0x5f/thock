@@ -32,13 +32,14 @@ int main(void)
 
     draw();
     while(!end_session){
-        task = retrieve_task();
+        task = retrieve_session_task();
         switch(task){
             case SESSION_NOTASK:
                 /* draw(); */
                 break;
             case SESSION_RUN:
-                end_session = run();
+                /* end_session = thock(); */
+                thock();
                 break;
             case SESSION_STATS:
                 //show_stats();

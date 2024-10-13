@@ -50,7 +50,7 @@ bool initialize_interface(void)
     return(true);
 }
 
-SessionTask retrieve_task(void)
+SessionTask retrieve_session_task(void)
 {
     SessionTask task = SESSION_NOTASK;
 
@@ -71,10 +71,56 @@ SessionTask retrieve_task(void)
     return(task);
 }
 
-/* TODO: probably will be returning task */
-bool run(void)
+/* TODO: should return something, probably a session task type or bool */
+void thock(void)
 {
-    return(true);
+    bool end_set = false;
+    SetTask task = SET_NOTASK;
+
+    while(!end_set){
+        task = retrieve_set_task();
+        switch(task){
+            case SET_NOTASK:
+                break;
+            case SET_RELOAD:
+                /* if(!too_small()) */
+                /*     reload(); */
+                break;
+            case SET_END:
+                end_set = true;
+                break;
+        }
+    }
+    /* return(???); */
+}
+
+SetTask retrieve_set_task(void)
+{
+    bool set_active = true;
+    SetTask task = SET_NOTASK;
+    wint_t keycode;
+
+    while(set_active){
+        keycode = get_keycode();
+        switch(keycode){
+            case ctrl('r'):
+                task = SET_RELOAD;
+                set_active = false;
+                break;
+            case ctrl('x'):
+                task = SET_END;
+                set_active = false;
+                break;
+            case WEOF:
+                // nada
+                break;
+            default:
+                /* use_key(key); */
+                break;
+        }
+    }
+
+    return(task);
 }
 
 /* TODO: bit field to decide which windows to draw */

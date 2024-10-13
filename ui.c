@@ -14,8 +14,8 @@
 
 #define STD_X      ( getmaxx(stdscr) )
 #define STD_Y      ( getmaxy(stdscr) )
-#define X_OFFSET   ( (STD_X / 2) - (WIDTH / 2) )
-#define Y_OFFSET   ( (STD_Y - (textview.rows + prompt.rows) ) / 2 )
+#define OFFSET_X   ( (STD_X / 2) - (WIDTH / 2) )
+#define OFFSET_Y   ( (STD_Y - (textview.rows + prompt.rows) ) / 2 )
 
 
 typedef struct {
@@ -155,7 +155,7 @@ bool initialize_prompt(void)
     }
 
     prompt.win = newwin(prompt.rows, prompt.cols,
-                        Y_OFFSET+textview.rows, X_OFFSET);
+                        OFFSET_Y+textview.rows, OFFSET_X);
     if(!prompt.win){
         endwin();
         fprintf(stderr,"prompt.win null");
@@ -182,8 +182,8 @@ void draw_textview(void)
     /* prefresh(WINDOW* pad, int pad_y, int pad_x, int topleft_y, 
      *          int topleft_x, int botright_y, int botright_x) */
     prefresh(textview.win , textview.offset , 0 , 
-             Y_OFFSET , X_OFFSET + 1 ,
-             Y_OFFSET + textview.rows , X_OFFSET + (WIDTH-2) );
+             OFFSET_Y , OFFSET_X + 1 ,
+             OFFSET_Y + textview.rows , OFFSET_X + (WIDTH-2) );
 
 }
 
@@ -223,7 +223,8 @@ wint_t get_keycode(void)
 }
 
 /* TODO: clean this up a bit */
-void do_resize(void){
+void do_resize(void)
+{
     free_textview();
     free_prompt();
     free_stdscr_resize();
@@ -242,7 +243,7 @@ void do_resize(void){
         }
 
         prompt.win = newwin(prompt.rows, prompt.cols,
-                            Y_OFFSET + textview.rows, X_OFFSET);
+                            OFFSET_Y + textview.rows, OFFSET_X);
         if(!prompt.win){
             endwin();
             fprintf(stderr,"prompt.win null");
@@ -286,7 +287,6 @@ void free_wordset(void)
 
 void free_textview(void)
 {
-    /* wclear(textview.win); */
     delwin(textview.win);
 }
 
@@ -297,7 +297,6 @@ void free_buffer(void)
 
 void free_prompt(void)
 {
-    /* wclear(prompt.win); */
     delwin(prompt.win);
 }
 
