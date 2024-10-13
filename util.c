@@ -57,7 +57,8 @@ SessionTask retrieve_task(void)
     wint_t keycode = get_keycode();
     switch(keycode){
         case ctrl('g'):
-            task = SESSION_RUN;
+            if(!too_small())
+                task = SESSION_RUN;
             break;
         case ctrl('x'):
             task = SESSION_END;

@@ -229,8 +229,7 @@ void do_resize(void){
     free_stdscr_resize();
 
     if(too_small()){
-        /* box(stdscr,0,0); */
-        mvaddstr(1,1,"too smol..");
+        mvprintw(1,1,"too smol...");
         draw_stdscr();
     }else{
         box(stdscr,0,0);
@@ -287,7 +286,7 @@ void free_wordset(void)
 
 void free_textview(void)
 {
-    wclear(textview.win);
+    /* wclear(textview.win); */
     delwin(textview.win);
 }
 
@@ -298,7 +297,7 @@ void free_buffer(void)
 
 void free_prompt(void)
 {
-    wclear(prompt.win);
+    /* wclear(prompt.win); */
     delwin(prompt.win);
 }
 
