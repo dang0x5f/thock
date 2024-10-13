@@ -4,12 +4,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <wchar.h>
-#include "util.h"
 
 #define KEY_ESCAPE '\033'
 #define KEY_SPACE  '\040'
-
-#define ctrl(x)             ( (x) & 0x1F )
 
 bool initialize_stdscr(void);
 bool initialize_wordset(void);
@@ -25,7 +22,6 @@ void draw_textview_wordset(void);
 void draw_prompt(void);
 
 wint_t get_keycode(void);
-SetTask run_set(void);
 bool use_key(wint_t);
 void do_resize(void);
 bool too_small(void);
