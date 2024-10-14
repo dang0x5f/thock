@@ -115,7 +115,7 @@ SetTask retrieve_set_task(void)
                 // nada
                 break;
             default:
-                /* use_key(key); */
+                use_keycode(keycode);
                 break;
         }
     }

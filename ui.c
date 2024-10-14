@@ -37,6 +37,7 @@ typedef struct {
     uint8_t  rows;
     uint8_t  xpos;
     uint8_t  ypos;
+    uint8_t  buffer_index;
     uint8_t  buffer_length;
     wchar_t* buffer;
     WINDOW*  win;
@@ -146,6 +147,7 @@ bool initialize_prompt(void)
     prompt.xpos = 1;
     prompt.ypos = 1;
 
+    prompt.buffer_index = 0;
     prompt.buffer_length = buf_len;
     prompt.buffer = malloc( (prompt.buffer_length+1) * sizeof(wchar_t) );
     if(!prompt.buffer){
@@ -218,8 +220,56 @@ wint_t get_keycode(void)
             flushinp();
             key = WEOF;
             break;
+        case KEY_BACKSPACE:
+            backspace_buffer();
+            key = WEOF;
+            break;
     }
     return(key);
+}
+
+bool use_keycode(wint_t key)
+{
+    if(key < 32) return(true);
+    update_buffer(key);
+    write_prompt();
+
+    /* update_state(); */
+    /* write_wordset(); */
+
+    return(true);
+}
+
+/* ... [48] [49] [50] */
+
+void backspace_buffer(void)
+{
+    if(prompt.buffer_index > 0){
+        prompt.buffer_index -= 1;
+        mvwaddwstr(prompt.win,1,prompt.buffer_index+1,L" ");
+        *(prompt.buffer+prompt.buffer_index) = (wchar_t)'\000';
+
+        write_prompt();
+        /* update_state(); */
+        /* write_wordset(); */
+    }
+}
+
+void update_buffer(wint_t key)
+{
+    if(prompt.buffer_index == prompt.buffer_length){
+        *(prompt.buffer+prompt.buffer_index-1) = key;
+        *(prompt.buffer+prompt.buffer_length)  = (wchar_t)'\000';
+    }else{
+        *(prompt.buffer+prompt.buffer_index) = key;
+        prompt.buffer_index += 1;
+        *(prompt.buffer+prompt.buffer_index) = (wchar_t)'\000';
+    }
+}
+
+void write_prompt(void)
+{
+    mvwaddwstr(prompt.win,1,1,prompt.buffer);
 }
 
 /* TODO: clean this up a bit */

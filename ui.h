@@ -22,7 +22,12 @@ void draw_textview_wordset(void);
 void draw_prompt(void);
 
 wint_t get_keycode(void);
-bool use_key(wint_t);
+bool use_keycode(wint_t);
+
+void backspace_buffer(void);
+void update_buffer(wint_t);
+void write_prompt(void);
+
 void do_resize(void);
 bool too_small(void);
 
