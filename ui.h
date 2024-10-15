@@ -8,6 +8,12 @@
 #define KEY_ESCAPE '\033'
 #define KEY_SPACE  '\040'
 
+typedef enum {
+    CVS_INVISIBLE,
+    CVS_NORMAL,
+    CVS_VERYVISIBLE
+} CursorVisibilityState;
+
 bool initialize_stdscr(void);
 bool initialize_wordset(void);
 bool initialize_wordset_state(void);
@@ -30,6 +36,9 @@ void write_prompt(void);
 
 void do_resize(void);
 bool too_small(void);
+
+void place_cursor(void);
+void toggle_cursor(CursorVisibilityState);
 
 void free_stdscr_resize(void);
 void free_stdscr_exit(void);

@@ -60,6 +60,7 @@ bool initialize_stdscr(void)
     noecho();
     set_escdelay(25);
     start_color();
+    toggle_cursor(CVS_INVISIBLE);
     box(stdscr,0,0);
 
     refresh();
@@ -305,6 +306,7 @@ void do_resize(void)
         draw_stdscr();
         draw_textview();
         draw_prompt();
+        write_prompt();
     }
 }
 
@@ -314,6 +316,17 @@ bool too_small(void)
         return(true);
     else
         return(false);
+}
+
+void place_cursor(void)
+{
+    wmove(prompt.win,1,1+prompt.buffer_index);
+}
+
+/* TODO: add global current cursor. assign it here */
+void toggle_cursor(CursorVisibilityState cvs)
+{
+    curs_set(cvs);
 }
 
 void free_stdscr_resize(void)

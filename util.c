@@ -76,6 +76,8 @@ void thock(void)
 {
     bool end_set = false;
     SetTask task = SET_NOTASK;
+    toggle_cursor(CVS_NORMAL);
+    place_cursor();
 
     while(!end_set){
         task = retrieve_set_task();
@@ -91,6 +93,7 @@ void thock(void)
                 break;
         }
     }
+    toggle_cursor(CVS_INVISIBLE);
     /* return(???); */
 }
 
