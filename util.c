@@ -92,7 +92,11 @@ void thock(void)
     bool end_set = false;
     SetTask task = SET_NOTASK;
 
+    /* TODO: track if this has already been done for this wordset, moved from retrieve_set_task */
+    assert(convert_to_wordset_wcextended() == true);
+
     set_ps(PS_INSET);
+    draw_textview();
     toggle_cursor(CVS_NORMAL);
     place_cursor();
 
@@ -125,7 +129,7 @@ SetTask retrieve_set_task(void)
     SetTask task = SET_NOTASK;
     wint_t keycode;
 
-    assert(convert_to_wordset_wcextended() == true);
+    /* assert(convert_to_wordset_wcextended() == true); */
 
     while(set_active){
         keycode = get_keycode();

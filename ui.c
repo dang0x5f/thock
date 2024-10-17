@@ -29,6 +29,7 @@ typedef struct {
 typedef struct {
     wchar_t* wctext;
     cchar_t* wcextended;
+    uint8_t  wctext_cursor;
     uint8_t* wctext_state;
     uint32_t wctext_length;
 } Wordset;
@@ -63,6 +64,11 @@ bool initialize_stdscr(void)
     start_color();
     toggle_cursor(CVS_INVISIBLE);
     box(stdscr,0,0);
+
+
+    /* TODO: init color pairs separately */
+    init_pair(1,COLOR_BLACK,COLOR_GREEN);
+    init_pair(2,COLOR_BLACK,COLOR_RED);
 
     refresh();
     
@@ -108,6 +114,8 @@ bool initialize_wordset_state(void)
 
         index++;
     }
+
+    wordset.wctext_cursor = 0;
 
     return(true);
 }
@@ -260,11 +268,9 @@ wint_t get_keycode(void)
             flushinp();
             key = WEOF;
             break;
+        /* TODO: move elsewhere */
         case KEY_BACKSPACE:
             backspace_buffer();
-            key = WEOF;
-            break;
-        case KEY_SPACE:
             key = WEOF;
             break;
     }
@@ -277,7 +283,7 @@ bool use_keycode(wint_t key)
     update_buffer(key);
     write_prompt();
 
-    /* update_state(); */
+    update_state(&key);
     draw_textview();
 
     return(true);
@@ -291,9 +297,10 @@ void backspace_buffer(void)
         prompt.buffer_index -= 1;
         mvwaddwstr(prompt.win,1,prompt.buffer_index+1,L" ");
         *(prompt.buffer+prompt.buffer_index) = (wchar_t)'\000';
-
-        /* update_state(); */
         write_prompt();
+
+        update_state(NULL);
+        draw_textview();
     }
 }
 
@@ -311,12 +318,29 @@ void update_buffer(wint_t key)
 
 void update_state(wint_t* key)
 {
-    if (key == NULL)
+    if (key == NULL){
         // backspace logic
-    else if (*key == KEY_SPACE)
+        if(wordset.wctext_cursor > 0){
+            *(wordset.wctext_state+wordset.wctext_cursor) = WC_OUT_OF_REACH;
+
+            wordset.wctext_cursor--;
+            *(wordset.wctext_state+wordset.wctext_cursor) = WC_CURSOR;
+        }
+    /* TODO: implement space testing */
+    /* } else if (*key == KEY_SPACE){ */
         // compare segment logic
-    else
+    } else{
         // compare key to char logic
+        /* (wordset.wcextended+wordset.wctext_cursor)->attr = WA_REVERSE; */
+        if( *((wordset.wcextended+wordset.wctext_cursor)->chars) == (wchar_t)(*key) ){
+            *(wordset.wctext_state+wordset.wctext_cursor) = WC_CORRECT;
+        }else{
+            *(wordset.wctext_state+wordset.wctext_cursor) = WC_INCORRECT;
+        }
+
+        wordset.wctext_cursor++;
+        *(wordset.wctext_state+wordset.wctext_cursor) = WC_CURSOR;
+    }
 }
 
 void write_textview_wordset_wctext(void)
@@ -334,8 +358,25 @@ void write_textview_wordset_wctext(void)
 void write_textview_wordset_wcextended(void)
 {
     wclear(textview.win);
-    for(unsigned int x = 0; x < wcslen(wordset.wctext); x++)
+    for(unsigned int x = 0; x < wcslen(wordset.wctext); x++){
+        /* if( *(wordset.wctext_state+x) == WC_CORRECT ) */
+        /*     (wordset.wcextended+x)->attr = COLOR_PAIR(1); */
+        switch(*(wordset.wctext_state+x)){
+            case WC_CURSOR:
+                (wordset.wcextended+x)->attr = WA_REVERSE;
+                break;
+            case WC_CORRECT:
+                (wordset.wcextended+x)->attr = COLOR_PAIR(1);
+                break;
+            case WC_INCORRECT:
+                (wordset.wcextended+x)->attr = COLOR_PAIR(2);
+                break;
+            case WC_OUT_OF_REACH:
+                (wordset.wcextended+x)->attr = WA_NORMAL;
+                break;
+        }
         wadd_wch(textview.win,wordset.wcextended+x);
+    }
 }
 
 void write_prompt(void)
