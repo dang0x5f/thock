@@ -62,34 +62,9 @@ int main(void)
 
 
 
-
-
 // ----------------------------------------------------------------
 
-
-/* int main(void) */
-/* { */
-/*     int action = 0; */
-/*     int size = 0; */
-/*     uint8_t* wordset_state = NULL; */
-/*     uint32_t wordset_length = 0; */
-
-/*     init_ncurses(); */
-    
-/*     request_wordset(wordset_state, &wordset_length); */
-/*     while(1){ */
-/*         action = get_key(wordset_state); */
-/*     } */
-
-/*     return(0); */
-/* } */
-
 /*
-int main2(void)
-{
-    char* words = NULL;
-    int size = 0;
-
     int num_of_mods = sizeof(modules)/sizeof(Module);
     printf("\t%d %d\n", sizeof(modules), sizeof(Module));
 
@@ -100,7 +75,4 @@ int main2(void)
     }
 
     if(words != NULL) free(words);
-
-    return(0);    
-}
 */

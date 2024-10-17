@@ -5,6 +5,12 @@
 #include <stdint.h>
 
 typedef enum {
+    PS_INSET,
+    PS_OUTSET,
+    PS_FAILING
+} ProgramState;
+
+typedef enum {
     SESSION_NOTASK,
     SESSION_RUN,
     SESSION_STATS,
@@ -37,6 +43,9 @@ extern Module modules[];
 
 bool initialize_program(void);
 bool initialize_interface(void);
+
+void set_ps(ProgramState);
+ProgramState get_ps(void);
 
 SessionTask retrieve_session_task(void);
 SetTask retrieve_set_task(void);

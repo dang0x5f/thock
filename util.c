@@ -3,6 +3,7 @@
 #include <locale.h>
 /* #include <wchar.h> */
 /* #include <errno.h> */
+#include <assert.h>
 #include <stdbool.h>
 
 #define ctrl(x)             ( (x) & 0x1F )
@@ -10,6 +11,8 @@
 #include "ui.h"
 #include "util.h"
 #include "mods.h"
+
+static ProgramState program_state;
 
 bool initialize_program(void)
 {
@@ -21,6 +24,8 @@ bool initialize_program(void)
         fprintf(stderr,"no modules\n");
         return(false);
     }
+
+    set_ps(PS_OUTSET);
 
     return(true);
 }
@@ -50,6 +55,16 @@ bool initialize_interface(void)
     return(true);
 }
 
+void set_ps(ProgramState ps)
+{
+    program_state = ps;
+}
+
+ProgramState get_ps(void)
+{
+    return program_state;
+}
+
 SessionTask retrieve_session_task(void)
 {
     SessionTask task = SESSION_NOTASK;
@@ -76,6 +91,8 @@ void thock(void)
 {
     bool end_set = false;
     SetTask task = SET_NOTASK;
+
+    set_ps(PS_INSET);
     toggle_cursor(CVS_NORMAL);
     place_cursor();
 
@@ -94,6 +111,11 @@ void thock(void)
         }
     }
     toggle_cursor(CVS_INVISIBLE);
+    set_ps(PS_OUTSET);
+    // TODO: put somewhere else?
+    draw_textview();
+
+
     /* return(???); */
 }
 
@@ -102,6 +124,8 @@ SetTask retrieve_set_task(void)
     bool set_active = true;
     SetTask task = SET_NOTASK;
     wint_t keycode;
+
+    assert(convert_to_wordset_wcextended() == true);
 
     while(set_active){
         keycode = get_keycode();
@@ -136,7 +160,7 @@ void draw(void)
 
 void exit_program(void)
 {
-    free_wordset();
+    free_wordset_wctext();
     free_textview();
     free_buffer();
     free_prompt();

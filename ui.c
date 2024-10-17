@@ -27,9 +27,10 @@ typedef struct {
 } TextView;
 
 typedef struct {
-    wchar_t* text;
-    uint8_t* text_state;
-    uint32_t text_length;
+    wchar_t* wctext;
+    cchar_t* wcextended;
+    uint8_t* wctext_state;
+    uint32_t wctext_length;
 } Wordset;
 
 typedef struct {
@@ -70,19 +71,20 @@ bool initialize_stdscr(void)
 
 bool initialize_wordset(void)
 {
-    wordset.text        = NULL;
-    wordset.text_state  = NULL;
-    wordset.text_length = 0;
+    wordset.wctext        = NULL;
+    wordset.wcextended    = NULL;
+    wordset.wctext_state  = NULL;
+    wordset.wctext_length = 0;
 
     /* TODO: explicitly declare modules[0] ? */
-    wordset.text = modules[0].get_wordset(&wordset.text_length);
-    if( (wordset.text == NULL) || (wordset.text_length == 0) ){
+    wordset.wctext = modules[0].get_wordset(&wordset.wctext_length);
+    if( (wordset.wctext == NULL) || (wordset.wctext_length == 0) ){
         endwin();
         return(false);
     }
 
-    wordset.text_state = malloc( (wordset.text_length+1) * sizeof(uint8_t) );
-    if ( (wordset.text_state == NULL) || !initialize_wordset_state() ){
+    wordset.wctext_state = malloc( (wordset.wctext_length+1) * sizeof(uint8_t) );
+    if ( (wordset.wctext_state == NULL) || !initialize_wordset_state() ){
         endwin();
         return(false);
     }
@@ -93,16 +95,16 @@ bool initialize_wordset(void)
 bool initialize_wordset_state(void)
 {
     uint32_t index = 0;
-    wchar_t* iter = wordset.text;
+    wchar_t* iter = wordset.wctext;
 
-    while(index < wordset.text_length){
+    while(index < wordset.wctext_length){
         if(index == 0)
-            *(wordset.text_state+index) = WC_CURSOR;
+            *(wordset.wctext_state+index) = WC_CURSOR;
         /* TODO: add macros for space keys */
         else if(*iter == '\040')
-            *(wordset.text_state+index) = WC_CHECKPOINT_ON;
+            *(wordset.wctext_state+index) = WC_CHECKPOINT_ON;
         else
-            *(wordset.text_state+index) = WC_OUT_OF_REACH;
+            *(wordset.wctext_state+index) = WC_OUT_OF_REACH;
 
         index++;
     }
@@ -113,8 +115,8 @@ bool initialize_wordset_state(void)
 bool initialize_textview(void)
 {
     /* TODO: WIDTH might need to be buf_len, ie WIDTH-2 */ 
-    textview.total_rows = wordset.text_length/WIDTH;
-    if(wordset.text_length%WIDTH != 0)
+    textview.total_rows = wordset.wctext_length/WIDTH;
+    if(wordset.wctext_length%WIDTH != 0)
         textview.total_rows += 1;
     
     textview.cols   = WIDTH;
@@ -125,7 +127,7 @@ bool initialize_textview(void)
     if( (textview.total_rows < 1) || (textview.cols < 1) ){
         endwin();
         fprintf(stderr, "  wordsetlen: %d\n  totalrow: %d\n  cols: %d\n  rows: %d\n", 
-                wordset.text_length, textview.total_rows, textview.cols, textview.rows);
+                wordset.wctext_length, textview.total_rows, textview.cols, textview.rows);
         return(false);
     }
 
@@ -181,7 +183,10 @@ void draw_stdscr(void)
 
 void draw_textview(void)
 {
-    draw_textview_wordset();
+    if(get_ps() == PS_OUTSET)
+        write_textview_wordset_wctext();
+    else
+        write_textview_wordset_wcextended();
     /* prefresh(WINDOW* pad, int pad_y, int pad_x, int topleft_y, 
      *          int topleft_x, int botright_y, int botright_x) */
     prefresh(textview.win , textview.offset , 0 , 
@@ -190,87 +195,9 @@ void draw_textview(void)
 
 }
 
-void draw_textview_wordset(void)
-{
-    /* TODO: this needs to output wchar */
-    waddwstr(textview.win, wordset.text);
-    /* for(int x = 0; x < wordset.text_length; x++){ */
-        /* if( *(wordset.text_state+x) == WC_CURSOR) */
-        /*     waddch(textview.win, WA_REVERSE | *(wordset.text+x)); */
-        /* else */
-        /*     waddch(textview.win, *(wordset.text+x)); */
-}
-
 void draw_prompt(void)
 {
     wrefresh(prompt.win);
-}
-
-wint_t get_keycode(void)
-{
-    wint_t key;
-    if(wget_wch(prompt.win,&key)==ERR)
-        return(WEOF);
-
-    switch(key){
-        case KEY_RESIZE:
-            do_resize();
-            key = WEOF;
-            break;
-        case KEY_ESCAPE:
-            flushinp();
-            key = WEOF;
-            break;
-        case KEY_BACKSPACE:
-            backspace_buffer();
-            key = WEOF;
-            break;
-    }
-    return(key);
-}
-
-bool use_keycode(wint_t key)
-{
-    if(key < 32) return(true);
-    update_buffer(key);
-    write_prompt();
-
-    /* update_state(); */
-    /* write_wordset(); */
-
-    return(true);
-}
-
-/* ... [48] [49] [50] */
-
-void backspace_buffer(void)
-{
-    if(prompt.buffer_index > 0){
-        prompt.buffer_index -= 1;
-        mvwaddwstr(prompt.win,1,prompt.buffer_index+1,L" ");
-        *(prompt.buffer+prompt.buffer_index) = (wchar_t)'\000';
-
-        write_prompt();
-        /* update_state(); */
-        /* write_wordset(); */
-    }
-}
-
-void update_buffer(wint_t key)
-{
-    if(prompt.buffer_index == prompt.buffer_length){
-        *(prompt.buffer+prompt.buffer_index-1) = key;
-        *(prompt.buffer+prompt.buffer_length)  = (wchar_t)'\000';
-    }else{
-        *(prompt.buffer+prompt.buffer_index) = key;
-        prompt.buffer_index += 1;
-        *(prompt.buffer+prompt.buffer_index) = (wchar_t)'\000';
-    }
-}
-
-void write_prompt(void)
-{
-    mvwaddwstr(prompt.win,1,1,prompt.buffer);
 }
 
 /* TODO: clean this up a bit */
@@ -318,6 +245,125 @@ bool too_small(void)
         return(false);
 }
 
+wint_t get_keycode(void)
+{
+    wint_t key;
+    if(wget_wch(prompt.win,&key)==ERR)
+        return(WEOF);
+
+    switch(key){
+        case KEY_RESIZE:
+            do_resize();
+            key = WEOF;
+            break;
+        case KEY_ESCAPE:
+            flushinp();
+            key = WEOF;
+            break;
+        case KEY_BACKSPACE:
+            backspace_buffer();
+            key = WEOF;
+            break;
+        case KEY_SPACE:
+            key = WEOF;
+            break;
+    }
+    return(key);
+}
+
+bool use_keycode(wint_t key)
+{
+    if(key < 32) return(true);
+    update_buffer(key);
+    write_prompt();
+
+    /* update_state(); */
+    draw_textview();
+
+    return(true);
+}
+
+/* ... [48] [49] [50] */
+
+void backspace_buffer(void)
+{
+    if(prompt.buffer_index > 0){
+        prompt.buffer_index -= 1;
+        mvwaddwstr(prompt.win,1,prompt.buffer_index+1,L" ");
+        *(prompt.buffer+prompt.buffer_index) = (wchar_t)'\000';
+
+        /* update_state(); */
+        write_prompt();
+    }
+}
+
+void update_buffer(wint_t key)
+{
+    if(prompt.buffer_index == prompt.buffer_length){
+        *(prompt.buffer+prompt.buffer_index-1) = key;
+        *(prompt.buffer+prompt.buffer_length)  = (wchar_t)'\000';
+    }else{
+        *(prompt.buffer+prompt.buffer_index) = key;
+        prompt.buffer_index += 1;
+        *(prompt.buffer+prompt.buffer_index) = (wchar_t)'\000';
+    }
+}
+
+void update_state(wint_t* key)
+{
+    if (key == NULL)
+        // backspace logic
+    else if (*key == KEY_SPACE)
+        // compare segment logic
+    else
+        // compare key to char logic
+}
+
+void write_textview_wordset_wctext(void)
+{
+    /* TODO: this needs to output wchar */
+    wclear(textview.win);
+    waddwstr(textview.win, wordset.wctext);
+    /* for(int x = 0; x < wordset.text_length; x++){ */
+        /* if( *(wordset.text_state+x) == WC_CURSOR) */
+        /*     waddch(textview.win, WA_REVERSE | *(wordset.text+x)); */
+        /* else */
+        /*     waddch(textview.win, *(wordset.text+x)); */
+}
+
+void write_textview_wordset_wcextended(void)
+{
+    wclear(textview.win);
+    for(unsigned int x = 0; x < wcslen(wordset.wctext); x++)
+        wadd_wch(textview.win,wordset.wcextended+x);
+}
+
+void write_prompt(void)
+{
+    mvwaddwstr(prompt.win,1,1,prompt.buffer);
+}
+
+bool convert_to_wordset_wcextended(void)
+{
+    /* cchar_t* wideboys = malloc( (wcslen(wc_sentence)+1) * sizeof(cchar_t) ); */
+    wordset.wcextended = malloc( (wcslen(wordset.wctext)+1) * sizeof(cchar_t) );
+    /* for(int x = 0; x < wcslen(wc_sentence); x++){ */
+    for(unsigned int x = 0; x < wcslen(wordset.wctext); x++){
+        if( x == 0 )
+            setcchar((wordset.wcextended+x),(wordset.wctext+x),WA_REVERSE,0,NULL);
+        else if( *(wordset.wctext+x) == '\012')
+            setcchar((wordset.wcextended+x),L"\n",0,0,NULL);
+        else
+            setcchar((wordset.wcextended+x),(wordset.wctext+x),0,0,NULL);
+    }
+    /*     if( *(wc_sentence+x) == '\012') */
+    /*         setcchar((wideboys+x),newline,0,0,NULL); */
+    /*     else */
+    /*         setcchar((wideboys+x),(wc_sentence+x),WA_UNDERLINE,0,NULL); */
+    /* } */
+    return(true);
+}
+
 void place_cursor(void)
 {
     wmove(prompt.win,1,1+prompt.buffer_index);
@@ -342,10 +388,11 @@ void free_stdscr_exit(void)
     clear();
 }
 
-void free_wordset(void)
+void free_wordset_wctext(void)
 {
-    free(wordset.text_state);
-    free(wordset.text);
+    free(wordset.wctext_state);
+    free(wordset.wcextended);
+    free(wordset.wctext);
 }
 
 void free_textview(void)
@@ -364,41 +411,6 @@ void free_prompt(void)
 }
 
 // ---------------------------------------------------------------
-
-/* void init_ncurses(void) */
-/* { */
-/*     setlocale(LC_ALL,""); */
-/*     assert(initscr() != NULL); */
-
-/*     noecho(); */
-/*     set_escdelay(25); */
-/*     nodelay(stdscr,TRUE); */
-/*     start_color(); */
-
-/*     box(stdscr,0,0); */
-
-/*     init_textview(0); */
-/*     init_prompt_window(); */
-
-/*     refresh_x3(); */
-/* } */
-
-/* void reset_ncurses(void) */
-/* { */
-/*     clear(); */
-/*     endwin(); */
-/*     refresh(); */
-/* } */
-
-/* void exit_ncurses(void) */
-/* { */
-/*     delwin(textview.window); */
-
-/*     if(prompt.buffer) free(prompt.buffer); */
-/*     delwin(prompt.window); */
-
-/*     endwin(); */
-/* } */
 
 /* int get_key(uint8_t* wordset_state) */
 /* { */
@@ -427,52 +439,6 @@ void free_prompt(void)
     /* } */
 
     /* return(0); */
-/* } */
-
-/* void evaluate_key(wint_t key) */
-/* { */
-/*     switch(key){ */
-/*         case KEY_RESIZE: */
-/*             redraw_all(); */
-/*             break; */
-/*         case KEY_BACKSPACE: */
-/*             if(prompt.buf_pos > 0){ */
-/*                 prompt.buf_pos--; */
-/*                 *(prompt.buffer+prompt.buf_pos) = (wchar_t)'\0'; */
-/*                 wclear(prompt.window); */
-/*                 box(prompt.window,0,0); */
-/*                 mvwaddwstr(prompt.window, 1,1, prompt.buffer); */
-/*                 wrefresh(prompt.window); */
-/*             } */
-/*             break; */
-/*     } */
-/* } */
-
-/* void redraw_all(void) */
-/* { */
-/*     delwin(textview.window); */
-/*     delwin(prompt.window); */
-/*     reset_ncurses(); */
-
-/*     box(stdscr,0,0); */
-
-/*     reinit_textview(); */
-/*     reinit_prompt_window(); */
-
-/*     restore_wordset_buffer_data(); */
-/* } */
-
-/* void init_textview(int rows) */
-/* { */
-/*     textview.rheight = rows; */
-/*     // +1 row index starts at 0 */
-/*     textview.height = (rows+1) > MAX_HEIGHT ? MAX_HEIGHT : rows+1; */ 
-/*     textview.window = newpad(textview.height,WIDTH); */
-/* } */
-
-/* void reinit_textview(void) */
-/* { */
-/*     textview.window = newpad(textview.height,WIDTH); */
 /* } */
 
 /* void reinit_prompt_window(void) */

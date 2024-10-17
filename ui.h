@@ -24,48 +24,31 @@ bool initialize_prompt(void);
 
 void draw_stdscr(void);
 void draw_textview(void);
-void draw_textview_wordset(void);
 void draw_prompt(void);
+
+void do_resize(void);
+bool too_small(void);
 
 wint_t get_keycode(void);
 bool use_keycode(wint_t);
 
 void backspace_buffer(void);
 void update_buffer(wint_t);
+void update_state(wint_t*);
+void write_textview_wordset_wctext(void);
+void write_textview_wordset_wcextended(void);
 void write_prompt(void);
 
-void do_resize(void);
-bool too_small(void);
+bool convert_to_wordset_wcextended(void);
 
 void place_cursor(void);
 void toggle_cursor(CursorVisibilityState);
 
 void free_stdscr_resize(void);
 void free_stdscr_exit(void);
-void free_wordset(void);
+void free_wordset_wctext(void);
 void free_textview(void);
 void free_buffer(void);
 void free_prompt(void);
-
-/* void init_ncurses(void); */
-/* void reset_ncurses(void); */
-/* void exit_ncurses(void); */
-
-/* int get_key(uint8_t*); */
-/* void evaluate_key(wint_t); */
-/* void redraw_all(void); */
-
-/* void init_textview(int); */
-/* void load_wordset_textview(wchar_t*,int,uint8_t*); */
-/* int write_to_textview(wchar_t*,uint8_t*); */
-
-/* void init_prompt_window(void); */
-/* void init_prompt_attributes(void); */
-/* int write_to_prompt(wint_t); */
-/* void reinit_textview(void); */
-/* void reinit_prompt_window(void); */
-
-/* void restore_wordset_buffer_data(void); */
-/* void refresh_x3(void); */
 
 #endif // UI_H
