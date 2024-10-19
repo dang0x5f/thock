@@ -9,6 +9,7 @@
 #include "mods.h"
 
 static ProgramState program_state;
+static int fail_index = FI_OFF;
 
 bool initialize_program(void)
 {
@@ -59,6 +60,16 @@ void set_ps(ProgramState ps)
 ProgramState get_ps(void)
 {
     return program_state;
+}
+
+void set_fi(int index)
+{
+    fail_index = index;
+}
+
+int get_fi(void)
+{
+    return(fail_index);
 }
 
 SessionTask retrieve_session_task(void)

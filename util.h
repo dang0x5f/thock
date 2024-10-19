@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define FI_OFF (-1)
+
 typedef enum {
     PS_INSET,
     PS_OUTSET,
@@ -46,6 +48,8 @@ bool initialize_interface(void);
 
 void set_ps(ProgramState);
 ProgramState get_ps(void);
+void set_fi(int);
+int get_fi(void);
 
 SessionTask retrieve_session_task(void);
 SetTask retrieve_set_task(void);

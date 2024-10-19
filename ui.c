@@ -334,6 +334,7 @@ wint_t get_keycode(void)
 bool use_keycode(wint_t key)
 {
     if(key < 32) return(true);
+    if(prompt.buffer_index == prompt.buffer_length) return(true);
     update_buffer(key);
     write_prompt();
 
@@ -374,32 +375,37 @@ void update_state(wint_t* key)
 {
     if (key == NULL){
         // backspace logic
+        if(get_ps() == PS_FAILING && get_fi() == wordset.wctext_cursor){
+            set_ps(PS_INSET);
+            set_fi(FI_OFF);
+        }
+
         if(wordset.wctext_cursor > 0){
             *(wordset.wctext_state+wordset.wctext_cursor) = WC_OUT_OF_REACH;
 
             wordset.wctext_cursor--;
             *(wordset.wctext_state+wordset.wctext_cursor) = WC_CURSOR;
         }
-    /* TODO: implement space testing */
+    } else if(get_ps() == PS_FAILING){
+        *(wordset.wctext_state+wordset.wctext_cursor) = WC_INCORRECT;
+        wordset.wctext_cursor++;
+        *(wordset.wctext_state+wordset.wctext_cursor) = WC_CURSOR;
     } else if (*key == KEY_SPACE && *((wordset.wcextended+wordset.wctext_cursor)->chars) == (wchar_t)KEY_SPACE){
         // compare segment logic
         if(compare_segments()){
-        /*     clear_prompt() */
-        /*     WC_CHECKPOINT_ON */
-        /*     new_segs() */
             update_segments();
             reset_prompt();
             *(wordset.wctext_state+wordset.wctext_cursor) = WC_CORRECT;
         }else{
-        /*     failstatesir() */
-        /*     *(wordset.wctext_state+wordset.wctext_cursor) = WC_INCORRECT; */
+            set_ps(PS_FAILING);
+            // fail_index = wordset.wctext_cursor;
+            set_fi(wordset.wctext_cursor);
             *(wordset.wctext_state+wordset.wctext_cursor) = WC_INCORRECT;
         }
         wordset.wctext_cursor++;
         *(wordset.wctext_state+wordset.wctext_cursor) = WC_CURSOR;
     } else{
         // compare key to char logic
-        /* (wordset.wcextended+wordset.wctext_cursor)->attr = WA_REVERSE; */
         if( *((wordset.wcextended+wordset.wctext_cursor)->chars) == (wchar_t)(*key) ){
             *(wordset.wctext_state+wordset.wctext_cursor) = WC_CORRECT;
         }else{
