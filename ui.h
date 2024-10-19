@@ -22,6 +22,8 @@ bool initialize_textview(void);
 bool initialize_prompt(void);
 
     void reset_wordset(void);
+void reset_prompt(void);
+void reset_buffer(void);
 
 void draw_stdscr(void);
 void draw_textview(void);
@@ -37,6 +39,7 @@ bool use_keycode(wint_t);
 void backspace_buffer(void);
 void update_buffer(wint_t);
 void update_state(wint_t*);
+void update_segments(void);
 void write_textview_wordset_wctext(void);
 void write_textview_wordset_wcextended(void);
 void write_prompt(void);

@@ -59,20 +59,3 @@ int main(void)
 
     exit(EXIT_SUCCESS);
 }
-
-
-
-// ----------------------------------------------------------------
-
-/*
-    int num_of_mods = sizeof(modules)/sizeof(Module);
-    printf("\t%d %d\n", sizeof(modules), sizeof(Module));
-
-    for(int x = 0; x < num_of_mods; x++){
-        words = modules[x].get_wordset(&size);
-        printf("%s\n",words);
-        free(words);
-    }
-
-    if(words != NULL) free(words);
-*/

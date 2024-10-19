@@ -205,6 +205,20 @@ bool initialize_prompt(void)
     return(true);
 }
 
+void reset_prompt(void)
+{
+    reset_buffer();    
+    prompt.buffer_index = 0;
+    place_cursor();    
+}
+
+void reset_buffer(void)
+{
+    memset(prompt.buffer,KEY_SPACE,sizeof(wchar_t)*prompt.buffer_length);
+    write_prompt(); 
+    memset(prompt.buffer,'\000',sizeof(wchar_t)*prompt.buffer_length);
+}
+
 void draw_stdscr(void)
 {
     wrefresh(stdscr);
@@ -235,6 +249,10 @@ bool compare_segments(void)
     wchar_t* iter = prompt.buffer;
 
     for(int x = wordset.seg_start; x <= wordset.seg_end; x++, iter++){
+        /* TODO: this covers for newlines in wordset and treats them as spaces \040 */
+        if( (wint_t)(*(wordset.wcextended+x)->chars) == '\012' )
+            continue;
+
         if( (wint_t)(*(wordset.wcextended+x)->chars) != (wint_t)(*iter)){
             iscomplete = false;
             break;
@@ -366,9 +384,11 @@ void update_state(wint_t* key)
     } else if (*key == KEY_SPACE && *((wordset.wcextended+wordset.wctext_cursor)->chars) == (wchar_t)KEY_SPACE){
         // compare segment logic
         if(compare_segments()){
-        /*     clearbuffsir() */
+        /*     clear_prompt() */
         /*     WC_CHECKPOINT_ON */
         /*     new_segs() */
+            update_segments();
+            reset_prompt();
             *(wordset.wctext_state+wordset.wctext_cursor) = WC_CORRECT;
         }else{
         /*     failstatesir() */
@@ -391,9 +411,17 @@ void update_state(wint_t* key)
     }
 }
 
+// +1 because cursor has not advanced yet
+void update_segments(void)
+{
+    uint32_t x;
+    wordset.seg_start = wordset.wctext_cursor + 1;
+    for(x = wordset.wctext_cursor + 1; x < wordset.wctext_length && *(wordset.wctext_state+x) != WC_CHECKPOINT_OFF; x++) ;
+    wordset.seg_end = x;
+}
+
 void write_textview_wordset_wctext(void)
 {
-    /* TODO: this needs to output wchar */
     wclear(textview.win);
     waddwstr(textview.win, wordset.wctext);
     /* for(int x = 0; x < wordset.text_length; x++){ */
@@ -498,152 +526,3 @@ void free_prompt(void)
 {
     delwin(prompt.win);
 }
-
-// ---------------------------------------------------------------
-
-/* int get_key(uint8_t* wordset_state) */
-/* { */
-/*     int rc; */
-/*     wint_t key; */
-    
-/*     rc = wget_wch(prompt.window,&key); */
-
-/*     if(key == ctrl('x')){ */
-/*         exit_ncurses(); */
-/*         exit(0); */
-/*     } */
-
-    /* if(key == KEY_ESC) */
-        /* flushinp(); // eats remaining function characters */
-
-    /* switch(rc){ */
-    /*     case OK: */
-    /*         if(key >= 32) write_to_prompt(key); */
-    /*         break; */
-    /*     case KEY_CODE_YES: */
-    /*         evaluate_key(key); */
-    /*         break; */
-    /*     case ERR: */
-    /*         break; */
-    /* } */
-
-    /* return(0); */
-/* } */
-
-/* void reinit_prompt_window(void) */
-/* { */
-/*     prompt.window = newwin(3,WIDTH, */
-/*                            h_offset(textview.height,3)+textview.height, */
-/*                            (std_x/2)-(WIDTH/2)); */
-/*     keypad(prompt.window,TRUE); */
-/*     box(prompt.window,0,0); */
-/* } */
-
-/* void load_wordset_textview(wchar_t* wordset, int wordset_len, uint8_t* wordset_state) */
-/* { */
-/*     if(textview.window != NULL) */
-/*         delwin(textview.window); */
-
-/*     if(prompt.window != NULL){ */
-/*         if(prompt.buffer) free(prompt.buffer); */
-/*         delwin(prompt.window); */
-/*     } */
-
-/*     clear(); */
-/*     box(stdscr,0,0); */
-/*     init_textview(wordset_len/WIDTH); */
-/*     init_prompt_window(); */
-
-/*     if(textview.wordset) free(textview.wordset); */
-/*     textview.wordset_len = wcslen(wordset); */
-/*     textview.wordset = malloc((textview.wordset_len+1) * sizeof(wchar_t)); */
-/*     wcscpy(textview.wordset,wordset); */
-
-/*     init_wordset_state(wordset,wordset_state,textview.wordset_len); */
-
-/*     write_to_textview(textview.wordset,wordset_state); */
-/* } */
-
-/* int write_to_textview(wchar_t* wordset, uint8_t* wordset_state) */
-/* { */
-/*     int x,y; */
-/*     getyx(prompt.window,y,x); */ 
-
-/*     wmove(textview.window,0,0); */
-
-/*     for(int x = 0; x < textview.wordset_len; x++){ */
-/*         /1* waddwstr(textview.window,(wordset+x)); *1/ */
-/*         if( *(wordset_state+x) == CURSOR) */
-/*             waddch(textview.window, WA_REVERSE | *(wordset+x)); */
-/*         else */
-/*             waddch(textview.window, *(wordset+x)); */
-
-/*     } */
-/*     wmove(prompt.window,y,x); */
-
-/*     refresh_x3(); */
-
-/*     return(0); */
-/* } */
-
-/* void init_prompt_window(void) */
-/* { */
-/*     prompt.window = newwin(3,WIDTH, */
-/*                            h_offset(textview.height,3)+textview.height, */
-/*                            (std_x/2)-(WIDTH/2)); */
-/*     keypad(prompt.window,TRUE); */
-/*     box(prompt.window,0,0); */
-
-/*     init_prompt_attributes(); */
-
-/*     wmove(prompt.window,prompt.posy,prompt.posx); */
-/* } */
-
-/* void init_prompt_attributes(void) */
-/* { */
-/*     prompt.buffer = malloc( (buf_len+1)*sizeof(wchar_t) ); */
-/*     prompt.buf_pos = 0; */
-
-/*     prompt.posy = 1; */
-/*     prompt.posx = 1; */
-/* } */
-
-/* int write_to_prompt(wint_t key) */
-/* { */
-/*     if(prompt.buf_pos == buf_len-1){ */
-/*         *(prompt.buffer + prompt.buf_pos) = key; */
-/*         *(prompt.buffer + buf_len) = (wchar_t)'\0'; */
-/*     }else{ */
-/*         *(prompt.buffer + prompt.buf_pos) = key; */
-/*         prompt.buf_pos++; */
-/*         *(prompt.buffer + prompt.buf_pos) = (wchar_t)'\0'; */
-/*     } */
-    
-/*     mvwaddwstr(prompt.window, 1,1, prompt.buffer); */
-/*     wrefresh(prompt.window); */
-
-/*     return(0); */
-/* } */
-
-/* void refresh_x3(void) */
-/* { */
-/*     refresh(); */
-/* /1* prefresh(pad, pad_y, pad_x, TOPLEFT_y, TOPLEFT_x, BOTRIGHT_y BOTRIGHT_x) *1/ */
-/*     prefresh(textview.window,0,0, */
-/*              h_offset(textview.height,3), */ 
-/*                      ((std_x/2)-(WIDTH/2))+1, */
-/*              h_offset(textview.height,3)+textview.height, */
-/*                      ((std_x/2)-(WIDTH/2))+WIDTH-2 ); */
-/*     wrefresh(prompt.window); */
-/* } */
-
-/* void restore_wordset_buffer_data(void) */
-/* { */
-/*     for(int x = 0; x < textview.wordset_len; x++){ */
-/*         waddch(textview.window,*(textview.wordset+x)); */
-/*     } */
-    
-/*     mvwaddwstr(prompt.window, 1,1, prompt.buffer); */
-
-/*     refresh_x3(); */
-/* } */
