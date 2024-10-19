@@ -27,6 +27,8 @@ typedef struct {
 } TextView;
 
 typedef struct {
+    uint8_t  seg_start;
+    uint8_t  seg_end;
     wchar_t* wctext;
     cchar_t* wcextended;
     uint8_t  wctext_cursor;
@@ -77,6 +79,8 @@ bool initialize_stdscr(void)
 
 bool initialize_wordset(void)
 {
+    wordset.seg_start     = 0;
+    wordset.seg_end       = 0;
     wordset.wctext        = NULL;
     wordset.wcextended    = NULL;
     wordset.wctext_state  = NULL;
@@ -95,6 +99,11 @@ bool initialize_wordset(void)
         return(false);
     }
 
+    if( !initialize_wordset_segments() || wordset.seg_start == wordset.seg_end){
+        endwin();
+        return(false);
+    }
+
     return(true);
 }
 
@@ -107,8 +116,8 @@ bool initialize_wordset_state(void)
         if(index == 0)
             *(wordset.wctext_state+index) = WC_CURSOR;
         /* TODO: add macros for space keys */
-        else if(*iter == '\040')
-            *(wordset.wctext_state+index) = WC_CHECKPOINT_ON;
+        else if(*(iter+index) == '\040')
+            *(wordset.wctext_state+index) = WC_CHECKPOINT_OFF;
         else
             *(wordset.wctext_state+index) = WC_OUT_OF_REACH;
 
@@ -117,6 +126,18 @@ bool initialize_wordset_state(void)
 
     wordset.wctext_cursor = 0;
 
+    return(true);
+}
+
+bool initialize_wordset_segments(void)
+{
+    uint32_t x;
+
+    for(x = 1; x < wordset.wctext_length && *(wordset.wctext_state+x) != WC_CHECKPOINT_OFF; x++) ;
+
+    wordset.seg_end = x;
+
+    /* printw("%d %d", wordset.seg_start, wordset.seg_end); */
     return(true);
 }
 
@@ -206,6 +227,21 @@ void draw_textview(void)
 void draw_prompt(void)
 {
     wrefresh(prompt.win);
+}
+
+bool compare_segments(void)
+{
+    bool iscomplete = true;
+    wchar_t* iter = prompt.buffer;
+
+    for(int x = wordset.seg_start; x <= wordset.seg_end; x++, iter++){
+        if( (wint_t)(*(wordset.wcextended+x)->chars) != (wint_t)(*iter)){
+            iscomplete = false;
+            break;
+        }
+    }
+
+    return(iscomplete);
 }
 
 /* TODO: clean this up a bit */
@@ -327,8 +363,20 @@ void update_state(wint_t* key)
             *(wordset.wctext_state+wordset.wctext_cursor) = WC_CURSOR;
         }
     /* TODO: implement space testing */
-    /* } else if (*key == KEY_SPACE){ */
+    } else if (*key == KEY_SPACE && *((wordset.wcextended+wordset.wctext_cursor)->chars) == (wchar_t)KEY_SPACE){
         // compare segment logic
+        if(compare_segments()){
+        /*     clearbuffsir() */
+        /*     WC_CHECKPOINT_ON */
+        /*     new_segs() */
+            *(wordset.wctext_state+wordset.wctext_cursor) = WC_CORRECT;
+        }else{
+        /*     failstatesir() */
+        /*     *(wordset.wctext_state+wordset.wctext_cursor) = WC_INCORRECT; */
+            *(wordset.wctext_state+wordset.wctext_cursor) = WC_INCORRECT;
+        }
+        wordset.wctext_cursor++;
+        *(wordset.wctext_state+wordset.wctext_cursor) = WC_CURSOR;
     } else{
         // compare key to char logic
         /* (wordset.wcextended+wordset.wctext_cursor)->attr = WA_REVERSE; */

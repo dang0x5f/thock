@@ -17,6 +17,7 @@ typedef enum {
 bool initialize_stdscr(void);
 bool initialize_wordset(void);
 bool initialize_wordset_state(void);
+bool initialize_wordset_segments(void);
 bool initialize_textview(void);
 bool initialize_prompt(void);
 
@@ -26,6 +27,7 @@ void draw_stdscr(void);
 void draw_textview(void);
 void draw_prompt(void);
 
+bool compare_segments(void);
 void do_resize(void);
 bool too_small(void);
 
