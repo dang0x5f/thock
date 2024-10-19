@@ -381,7 +381,10 @@ void update_state(wint_t* key)
         }
 
         if(wordset.wctext_cursor > 0){
-            *(wordset.wctext_state+wordset.wctext_cursor) = WC_OUT_OF_REACH;
+            if( *((wordset.wcextended+wordset.wctext_cursor)->chars) == (wchar_t)KEY_SPACE )
+                *(wordset.wctext_state+wordset.wctext_cursor) = WC_CHECKPOINT_OFF;
+            else
+                *(wordset.wctext_state+wordset.wctext_cursor) = WC_OUT_OF_REACH;
 
             wordset.wctext_cursor--;
             *(wordset.wctext_state+wordset.wctext_cursor) = WC_CURSOR;
@@ -398,7 +401,6 @@ void update_state(wint_t* key)
             *(wordset.wctext_state+wordset.wctext_cursor) = WC_CORRECT;
         }else{
             set_ps(PS_FAILING);
-            // fail_index = wordset.wctext_cursor;
             set_fi(wordset.wctext_cursor);
             *(wordset.wctext_state+wordset.wctext_cursor) = WC_INCORRECT;
         }
@@ -424,6 +426,9 @@ void update_segments(void)
     wordset.seg_start = wordset.wctext_cursor + 1;
     for(x = wordset.wctext_cursor + 1; x < wordset.wctext_length && *(wordset.wctext_state+x) != WC_CHECKPOINT_OFF; x++) ;
     wordset.seg_end = x;
+
+    /* printw(" %d %d", wordset.seg_start, wordset.seg_end); */
+    /* draw_stdscr(); */
 }
 
 void write_textview_wordset_wctext(void)
@@ -454,6 +459,7 @@ void write_textview_wordset_wcextended(void)
                 (wordset.wcextended+x)->attr = COLOR_PAIR(2);
                 break;
             case WC_OUT_OF_REACH:
+            case WC_CHECKPOINT_OFF:
                 (wordset.wcextended+x)->attr = WA_NORMAL;
                 break;
         }
