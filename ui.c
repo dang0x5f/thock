@@ -196,6 +196,7 @@ bool initialize_prompt(void)
         return(false);
     }
 
+    nodelay(prompt.win,TRUE);
     keypad(prompt.win,TRUE);
     box(prompt.win,0,0);
 
