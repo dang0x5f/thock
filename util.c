@@ -133,6 +133,7 @@ void thock(void)
 SetTask retrieve_set_task(void)
 {
     bool set_active = true;
+    bool set_completed = false;
     SetTask task = SET_NOTASK;
     wint_t keycode;
 
@@ -148,13 +149,22 @@ SetTask retrieve_set_task(void)
             case ctrl('x'):
                 task = SET_END;
                 set_active = false;
+                set_completed = true;
                 break;
             case WEOF:
                 // nada
                 break;
             default:
-                use_keycode(keycode);
+                set_completed = use_keycode(keycode);
                 break;
+        }
+
+        if(set_completed){
+            task = SET_END;
+            set_active = false;
+            initialize_wordset_state();
+            initialize_wordset_segments();
+            reset_prompt();
         }
     }
 

@@ -79,8 +79,6 @@ bool initialize_stdscr(void)
 
 bool initialize_wordset(void)
 {
-    wordset.seg_start     = 0;
-    wordset.seg_end       = 0;
     wordset.wctext        = NULL;
     wordset.wcextended    = NULL;
     wordset.wctext_state  = NULL;
@@ -132,6 +130,8 @@ bool initialize_wordset_state(void)
 bool initialize_wordset_segments(void)
 {
     uint32_t x;
+    wordset.seg_start = 0;
+    wordset.seg_end   = 0;
 
     for(x = 1; x < wordset.wctext_length && *(wordset.wctext_state+x) != WC_CHECKPOINT_OFF; x++) ;
 
@@ -333,15 +333,18 @@ wint_t get_keycode(void)
 
 bool use_keycode(wint_t key)
 {
+    bool set_completed = false;
+
     if(key < 32) return(true);
     if(prompt.buffer_index == prompt.buffer_length) return(true);
     update_buffer(key);
     write_prompt();
 
-    update_state(&key);
+    if(update_state(&key))
+        set_completed = true;
     draw_textview();
 
-    return(true);
+    return(set_completed);
 }
 
 /* ... [48] [49] [50] */
@@ -371,8 +374,10 @@ void update_buffer(wint_t key)
     }
 }
 
-void update_state(wint_t* key)
+bool update_state(wint_t* key)
 {
+    bool set_complete = false;
+
     if (key == NULL){
         // backspace logic
         if(get_ps() == PS_FAILING && get_fi() == wordset.wctext_cursor){
@@ -396,6 +401,8 @@ void update_state(wint_t* key)
     } else if (*key == KEY_SPACE && *((wordset.wcextended+wordset.wctext_cursor)->chars) == (wchar_t)KEY_SPACE){
         // compare segment logic
         if(compare_segments()){
+            if(wordset.seg_end == wordset.wctext_length-1)
+                set_complete = true;
             update_segments();
             reset_prompt();
             *(wordset.wctext_state+wordset.wctext_cursor) = WC_CORRECT;
@@ -417,6 +424,8 @@ void update_state(wint_t* key)
         wordset.wctext_cursor++;
         *(wordset.wctext_state+wordset.wctext_cursor) = WC_CURSOR;
     }
+
+    return(set_complete);
 }
 
 // +1 because cursor has not advanced yet
@@ -427,8 +436,8 @@ void update_segments(void)
     for(x = wordset.wctext_cursor + 1; x < wordset.wctext_length && *(wordset.wctext_state+x) != WC_CHECKPOINT_OFF; x++) ;
     wordset.seg_end = x;
 
-    /* printw(" %d %d", wordset.seg_start, wordset.seg_end); */
-    /* draw_stdscr(); */
+    printw(" %d %d", wordset.seg_start, wordset.seg_end);
+    draw_stdscr();
 }
 
 void write_textview_wordset_wctext(void)

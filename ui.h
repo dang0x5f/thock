@@ -38,7 +38,7 @@ bool use_keycode(wint_t);
 
 void backspace_buffer(void);
 void update_buffer(wint_t);
-void update_state(wint_t*);
+bool update_state(wint_t*);
 void update_segments(void);
 void write_textview_wordset_wctext(void);
 void write_textview_wordset_wcextended(void);
