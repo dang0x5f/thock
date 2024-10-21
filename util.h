@@ -30,8 +30,7 @@ typedef enum {
     WC_CURSOR,
     WC_CORRECT,
     WC_INCORRECT,
-    WC_CHECKPOINT_ON,
-    WC_CHECKPOINT_OFF,
+    WC_WHITESPACE,
     WC_OUT_OF_REACH,
     WC_NEWLINE
 } WCState;
