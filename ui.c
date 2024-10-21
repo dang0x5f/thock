@@ -114,7 +114,7 @@ bool initialize_wordset_state(void)
         if(index == 0)
             *(wordset.wctext_state+index) = WC_CURSOR;
         /* TODO: add macros for space keys */
-        else if(*(iter+index) == '\040')
+        else if(*(iter+index) == '\040' || *(iter+index) == '\012')
             *(wordset.wctext_state+index) = WC_CHECKPOINT_OFF;
         else
             *(wordset.wctext_state+index) = WC_OUT_OF_REACH;
@@ -336,8 +336,8 @@ bool use_keycode(wint_t key)
 {
     bool set_completed = false;
 
-    if(key < 32) return(true);
-    if(prompt.buffer_index == prompt.buffer_length) return(true);
+    if(key < 32) return(set_completed);
+    if(prompt.buffer_index == prompt.buffer_length) return(set_completed);
     update_buffer(key);
     write_prompt();
 
