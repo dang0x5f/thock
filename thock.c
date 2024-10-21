@@ -60,6 +60,5 @@ int main(void)
     exit(EXIT_SUCCESS);
 }
 
-/* TODO: utils ctrl() causes unintended issues ^B ^I etc.. */
 /* TODO: press enter to continue at game completion */ 
 /* TODO: timer */

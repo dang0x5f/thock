@@ -93,7 +93,6 @@ SessionTask retrieve_session_task(void)
     return(task);
 }
 
-/* TODO: should return something, probably a session task type or bool */
 void thock(void)
 {
     bool end_set = false;
@@ -123,10 +122,7 @@ void thock(void)
     }
     toggle_cursor(CVS_INVISIBLE);
     set_ps(PS_OUTSET);
-    // TODO: put somewhere else?
     draw_textview();
-
-
     /* return(???); */
 }
 
