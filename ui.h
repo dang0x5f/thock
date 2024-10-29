@@ -28,6 +28,7 @@ void reset_buffer(void);
 void draw_stdscr(void);
 void draw_textview(void);
 void draw_prompt(void);
+void draw_colorscheme(void);
 
 bool compare_segments(void);
 void do_resize(void);

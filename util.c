@@ -9,6 +9,7 @@
 #include "mods.h"
 
 static ProgramState program_state;
+static ProgramState shelfed_state;
 static int fail_index = FI_OFF;
 
 bool initialize_program(void)
@@ -60,6 +61,16 @@ void set_ps(ProgramState ps)
 ProgramState get_ps(void)
 {
     return program_state;
+}
+
+void save_ps(ProgramState ps)
+{
+    shelfed_state = ps;
+}
+
+void restore_ps(void)
+{
+    program_state = shelfed_state;
 }
 
 void set_fi(int index)

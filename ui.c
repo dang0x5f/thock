@@ -63,14 +63,13 @@ bool initialize_stdscr(void)
     set_escdelay(25);
     start_color();
     toggle_cursor(CVS_INVISIBLE);
-    box(stdscr,0,0);
-
 
     /* TODO: init color pairs separately */
-    init_pair(1,COLOR_BLACK,COLOR_GREEN);
-    init_pair(2,COLOR_BLACK,COLOR_RED);
+    init_pair(1,COLOR_BLACK,COLOR_RED);
+    init_pair(2,COLOR_BLACK,COLOR_GREEN);
+    init_pair(3,COLOR_BLACK, 21 );
 
-    refresh();
+    draw_stdscr();
     
     return(true);
 }
@@ -215,6 +214,8 @@ void reset_buffer(void)
 
 void draw_stdscr(void)
 {
+    box(stdscr,0,0);
+    draw_colorscheme();
     wrefresh(stdscr);
 }
 
@@ -235,6 +236,14 @@ void draw_textview(void)
 void draw_prompt(void)
 {
     wrefresh(prompt.win);
+}
+
+void draw_colorscheme(void)
+{
+    move(1,2);
+    addch(COLOR_PAIR(1) | ' ');
+    addch(COLOR_PAIR(2) | ' ');
+    addch(COLOR_PAIR(3) | ' ');
 }
 
 bool compare_segments(void)
@@ -266,8 +275,6 @@ void do_resize(void)
         mvprintw(1,1,"too smol...");
         draw_stdscr();
     }else{
-        box(stdscr,0,0);
-
         textview.win = newpad(textview.total_rows, WIDTH);
         if(textview.win == NULL){
             endwin();
@@ -294,10 +301,18 @@ void do_resize(void)
 
 bool too_small(void)
 {
-    if( STD_X < (WIDTH+4) || STD_Y < ((textview.rows + prompt.rows)+4) )
+    ProgramState state = get_ps();
+
+    if(!(state == PS_TOOSMOL)) save_ps(get_ps());
+
+    if( STD_X < (WIDTH+4) || STD_Y < ((textview.rows + prompt.rows)+8) ){
+        if(!(state == PS_TOOSMOL)) set_ps(PS_TOOSMOL);
         return(true);
-    else
+    }
+    else{
+        if(state == PS_TOOSMOL) restore_ps();
         return(false);
+    }
 }
 
 wint_t get_keycode(void)
@@ -317,7 +332,7 @@ wint_t get_keycode(void)
             break;
         case '\010':
         case KEY_BACKSPACE:
-            backspace_buffer();
+            if(!(get_ps() == PS_TOOSMOL)) backspace_buffer();
             key = WEOF;
             break;
     }
@@ -329,6 +344,7 @@ bool use_keycode(wint_t key)
     bool set_completed = false;
 
     if(key < 32) return(set_completed);
+    if(get_ps() == PS_TOOSMOL) return(set_completed);
     if(prompt.buffer_index == prompt.buffer_length) return(set_completed);
     update_buffer(key);
     write_prompt();
@@ -449,10 +465,10 @@ void write_textview_wordset_wcextended(void)
                 (wordset.wcextended+x)->attr = WA_REVERSE;
                 break;
             case WC_CORRECT:
-                (wordset.wcextended+x)->attr = COLOR_PAIR(1);
+                (wordset.wcextended+x)->attr = COLOR_PAIR(2);
                 break;
             case WC_INCORRECT:
-                (wordset.wcextended+x)->attr = COLOR_PAIR(2);
+                (wordset.wcextended+x)->attr = COLOR_PAIR(1);
                 break;
             case WC_OUT_OF_REACH:
             case WC_WHITESPACE:

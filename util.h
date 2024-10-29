@@ -9,7 +9,8 @@
 typedef enum {
     PS_INSET,
     PS_OUTSET,
-    PS_FAILING
+    PS_FAILING,
+    PS_TOOSMOL
 } ProgramState;
 
 typedef enum {
@@ -47,6 +48,8 @@ bool initialize_interface(void);
 
 void set_ps(ProgramState);
 ProgramState get_ps(void);
+void save_ps(ProgramState);
+void restore_ps(void);
 void set_fi(int);
 int get_fi(void);
 
