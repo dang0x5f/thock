@@ -7,11 +7,11 @@
 
 #include "dictmod.h"
 
-char* get_random_wordset(int* size)
+wchar_t* get_random_wordset(uint32_t* size)
 {
     FILE* files[FILECOUNT];    
     int file_lengths[FILECOUNT];
-    char* wordset = NULL;
+    wchar_t* wordset = NULL;
 
     open_files(files);
 
@@ -48,11 +48,11 @@ void assess_files(FILE** files, int* file_lengths)
     }
 }
 
-char* generate_words(FILE** files, int* file_lengths, int* size)
+wchar_t* generate_words(FILE** files, int* file_lengths, uint32_t* size)
 {
     const int BUFFER_SIZE = 256;
-    char* wordset = NULL;
-    char buffer[BUFFER_SIZE];   // TODO: does buffer size need to be this long?
+    wchar_t* wordset = NULL;
+    wchar_t buffer[BUFFER_SIZE];   // TODO: does buffer size need to be this long?
     int randomline, offset;
 
     srand(getpid());
@@ -63,23 +63,23 @@ char* generate_words(FILE** files, int* file_lengths, int* size)
             randomline = ((int)(((double)rand()/RAND_MAX)*file_lengths[file]));
             
             for(int line = 1; line < randomline; line++)
-                offset += strlen(fgets(buffer,BUFFER_SIZE,files[file]));
+                offset += wcslen(fgetws(buffer,BUFFER_SIZE,files[file]));
 
             fseek(files[file], offset, SEEK_SET);
-            fgets(buffer, BUFFER_SIZE, files[file]);
+            fgetws(buffer, BUFFER_SIZE, files[file]);
 
-            buffer[strlen(buffer)-1] = ' ';
+            buffer[wcslen(buffer)-1] = ' ';
 
             /* wordset malloc/realloc */
             if(wordset == NULL){
-                wordset = calloc(strlen(buffer)+1,sizeof(char));
-                strcpy(wordset,buffer);
+                wordset = calloc(wcslen(buffer)+1,sizeof(wchar_t));
+                wcscpy(wordset,buffer);
             }else{
-                char* temp_wordset = calloc(strlen(wordset)+1,sizeof(char));
-                strcpy(temp_wordset,wordset);
-                wordset = realloc(wordset,sizeof(char) * (strlen(wordset)+strlen(buffer)+1));
-                strcpy(wordset,temp_wordset);
-                strcat(wordset,buffer);
+                wchar_t* temp_wordset = calloc(wcslen(wordset)+1,sizeof(wchar_t));
+                wcscpy(temp_wordset,wordset);
+                wordset = realloc(wordset,sizeof(wchar_t) * (wcslen(wordset)+wcslen(buffer)+1));
+                wcscpy(wordset,temp_wordset);
+                wcscat(wordset,buffer);
                 free(temp_wordset);
             }
             rewind(files[file]);
@@ -88,7 +88,7 @@ char* generate_words(FILE** files, int* file_lengths, int* size)
 
     /* TODO: realloc once more -1 to get rid of space ; may keep after all */
     
-    *size = strlen(wordset);
+    *size = wcslen(wordset);
     return(wordset);
 }
 

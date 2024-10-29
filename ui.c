@@ -10,8 +10,6 @@
 #define WIDTH 50
 #define MAX_HEIGHT 5
 
-#define buf_len    ( WIDTH - 2 )
-
 #define STD_X      ( getmaxx(stdscr) )
 #define STD_Y      ( getmaxy(stdscr) )
 #define OFFSET_X   ( (STD_X / 2) - (WIDTH / 2) )
@@ -67,7 +65,7 @@ bool initialize_stdscr(void)
     /* TODO: init color pairs separately */
     init_pair(1,COLOR_BLACK,COLOR_RED);
     init_pair(2,COLOR_BLACK,COLOR_GREEN);
-    init_pair(3,COLOR_BLACK, 21 );
+    init_pair(3,COLOR_BLACK,COLOR_BLUE);
 
     draw_stdscr();
     
@@ -82,11 +80,14 @@ bool initialize_wordset(void)
     wordset.length = 0;
 
     /* explicitly declare modules[0] ? */
-    wordset.wctext = modules[0].get_wordset(&wordset.length);
+    wordset.wctext = modules[1].get_wordset(&wordset.length);
     if( (wordset.wctext == NULL) || (wordset.length == 0) ){
         endwin();
         return(false);
     }
+
+    sanitize_nl();
+    insert_nl();
 
     wordset.state = malloc( (wordset.length+1) * sizeof(uint8_t) );
     if ( (wordset.state == NULL) || !initialize_wordset_state() ){
@@ -175,7 +176,7 @@ bool initialize_prompt(void)
     prompt.ypos = 1;
 
     prompt.buffer_index = 0;
-    prompt.buffer_length = buf_len;
+    prompt.buffer_length = (WIDTH-2);
     prompt.buffer = malloc( (prompt.buffer_length+1) * sizeof(wchar_t) );
     if(!prompt.buffer){
         endwin();
@@ -196,6 +197,36 @@ bool initialize_prompt(void)
     box(prompt.win,0,0);
 
     return(true);
+}
+
+void sanitize_nl(void)
+{
+    for(uint32_t x = 0; x < wordset.length; x++){
+        if((wint_t)(*(wordset.wctext+x)) == '\012')
+            *(wordset.wctext+x) = (wchar_t)'\040';
+    }
+}
+
+void insert_nl(void)
+{
+    uint32_t linelength = (WIDTH-2);
+    uint32_t offset     = (linelength-1); // 0-based indexing
+    
+    while(offset < wordset.length){
+
+        if((wint_t)(*(wordset.wctext+offset)) != '\040'){
+            uint32_t tempindex = offset - 1;
+
+            while((wint_t)(*(wordset.wctext+tempindex)) != '\040') tempindex--;
+
+            *(wordset.wctext+tempindex) = (wchar_t)'\012';
+
+            offset = tempindex;
+        }
+
+        offset += linelength;
+    }
+
 }
 
 void reset_prompt(void)
@@ -229,7 +260,7 @@ void draw_textview(void)
      *          int topleft_x, int botright_y, int botright_x) */
     prefresh(textview.win , textview.offset , 0 , 
              OFFSET_Y , OFFSET_X + 1 ,
-             OFFSET_Y + textview.rows , OFFSET_X + (WIDTH-2) );
+             OFFSET_Y + textview.rows - 1, OFFSET_X + (WIDTH-2) );
 
 }
 

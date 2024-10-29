@@ -41,6 +41,8 @@ void backspace_buffer(void);
 void update_buffer(wint_t);
 bool update_state(wint_t*);
 void update_segments(void);
+void sanitize_nl(void);
+void insert_nl(void);
 void write_textview_wordset_wctext(void);
 void write_textview_wordset_wcextended(void);
 void write_prompt(void);

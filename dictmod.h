@@ -2,6 +2,7 @@
 #define DICTMOD_H
 
 #include <stdio.h>
+#include <wchar.h>
 
 #define LOOPS    10
 #define FILECOUNT 4
@@ -13,11 +14,11 @@ static const char* filepaths[] = {
     "/usr/share/dict/propernames"
 };
 
-char* get_random_wordset(int*);
+wchar_t* get_random_wordset(uint32_t*);
 
 void open_files(FILE**);
 void assess_files(FILE**,int*);
-char* generate_words(FILE**,int*,int*);
+wchar_t* generate_words(FILE**,int*,uint32_t*);
 /* void format_words(char**,int,int); */
 /* void free_words(char**,int); */
 void close_files(FILE**);
