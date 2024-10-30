@@ -10,28 +10,29 @@
 #define WIDTH 50
 #define MAX_HEIGHT 5
 
-#define STD_X      ( getmaxx(stdscr) )
-#define STD_Y      ( getmaxy(stdscr) )
-#define OFFSET_X   ( (STD_X / 2) - (WIDTH / 2) )
-#define OFFSET_Y   ( (STD_Y - (textview.rows + prompt.rows) ) / 2 )
+#define STD_X         ( getmaxx(stdscr) )
+#define STD_Y         ( getmaxy(stdscr) )
+#define BORDERPAD_X   ( (STD_X / 2) - (WIDTH / 2) )
+#define BORDERPAD_Y   ( (STD_Y - (textview.rows + prompt.rows) ) / 2 )
 
 
 typedef struct {
-    uint8_t  rows;
-    uint8_t  cols;
+    uint32_t rows;
+    uint32_t cols;
     uint32_t total_rows;       
-    uint32_t offset;
+    uint32_t xoffset;
+    uint32_t yoffset;
     WINDOW*  win;
 } TextView;
 
 typedef struct {
-    uint8_t  cursor;
-    uint8_t* state;
-    uint32_t length;
-    uint8_t  seg_start;
-    uint8_t  seg_end;
-    wchar_t* wctext;
-    cchar_t* wcextended;
+    uint32_t* state;
+    uint32_t  cursor;
+    uint32_t  length;
+    uint32_t  seg_start;
+    uint32_t  seg_end;
+    wchar_t*  wctext;
+    cchar_t*  wcextended;
 } Wordset;
 
 typedef struct {
@@ -89,7 +90,7 @@ bool initialize_wordset(void)
     sanitize_nl();
     insert_nl();
 
-    wordset.state = malloc( (wordset.length+1) * sizeof(uint8_t) );
+    wordset.state = malloc( (wordset.length) * sizeof(uint8_t) );
     if ( (wordset.state == NULL) || !initialize_wordset_state() ){
         endwin();
         return(false);
@@ -102,7 +103,7 @@ bool initialize_wordset(void)
 
     return(true);
 }
-
+/* static uint32_t debug_sz; */
 bool initialize_wordset_state(void)
 {
     uint32_t index = 0;
@@ -112,13 +113,14 @@ bool initialize_wordset_state(void)
         if(index == 0)
             *(wordset.state+index) = WC_CURSOR;
         /* TODO: replace magic numbers */
-        else if(*(iter+index) == '\040' || *(iter+index) == '\012')
+        else if(*(iter+index) == (wchar_t)'\040' || *(iter+index) == (wchar_t)'\012')
             *(wordset.state+index) = WC_WHITESPACE;
         else
             *(wordset.state+index) = WC_OUT_OF_REACH;
 
         index++;
     }
+    /* debug_sz = index; */
 
     wordset.cursor = 0;
 
@@ -140,14 +142,14 @@ bool initialize_wordset_segments(void)
 
 bool initialize_textview(void)
 {
-    /* WIDTH might need to be buf_len, ie WIDTH-2 */ 
-    textview.total_rows = wordset.length/WIDTH;
-    if(wordset.length%WIDTH != 0)
+    textview.total_rows = wordset.length/(WIDTH-2)+1; // +1 for zero-based index on pads
+    if(wordset.length%(WIDTH-2) > 0)
         textview.total_rows += 1;
     
     textview.cols   = WIDTH;
     textview.rows   = (textview.total_rows) > MAX_HEIGHT ? MAX_HEIGHT : textview.total_rows;
-    textview.offset = 0;
+    textview.yoffset = 0;
+    textview.xoffset = 0;
 
     if( (textview.total_rows < 1) || (textview.cols < 1) ){
         endwin();
@@ -156,7 +158,7 @@ bool initialize_textview(void)
         return(false);
     }
 
-    textview.win = newpad(textview.total_rows, WIDTH);
+    textview.win = newpad(textview.total_rows, WIDTH-2);
 
     if(textview.win == NULL){
         endwin();
@@ -185,7 +187,7 @@ bool initialize_prompt(void)
     }
 
     prompt.win = newwin(prompt.rows, prompt.cols,
-                        OFFSET_Y+textview.rows, OFFSET_X);
+                        BORDERPAD_Y+textview.rows, BORDERPAD_X);
     if(!prompt.win){
         endwin();
         fprintf(stderr,"prompt.win null");
@@ -222,6 +224,8 @@ void insert_nl(void)
             *(wordset.wctext+tempindex) = (wchar_t)'\012';
 
             offset = tempindex;
+        }else{
+            *(wordset.wctext+offset) = (wchar_t)'\012';
         }
 
         offset += linelength;
@@ -238,9 +242,13 @@ void reset_prompt(void)
 
 void reset_buffer(void)
 {
-    memset(prompt.buffer,KEY_SPACE,sizeof(wchar_t)*prompt.buffer_length);
+    int x;
+
+    for(x = 0; x < prompt.buffer_length-1; x++)
+        *(prompt.buffer+x) = (wchar_t)'\040';
+    *(prompt.buffer+x) = (wchar_t)'\0';
+
     write_prompt(); 
-    memset(prompt.buffer,'\000',sizeof(wchar_t)*prompt.buffer_length);
 }
 
 void draw_stdscr(void)
@@ -258,9 +266,9 @@ void draw_textview(void)
         write_textview_wordset_wcextended();
     /* prefresh(WINDOW* pad, int pad_y, int pad_x, int topleft_y, 
      *          int topleft_x, int botright_y, int botright_x) */
-    prefresh(textview.win , textview.offset , 0 , 
-             OFFSET_Y , OFFSET_X + 1 ,
-             OFFSET_Y + textview.rows - 1, OFFSET_X + (WIDTH-2) );
+    prefresh(textview.win , textview.yoffset , 0 , 
+             BORDERPAD_Y , BORDERPAD_X + 1 ,
+             BORDERPAD_Y + textview.rows - 1, BORDERPAD_X + (WIDTH-2) +1 );
 
 }
 
@@ -314,7 +322,7 @@ void do_resize(void)
         }
 
         prompt.win = newwin(prompt.rows, prompt.cols,
-                            OFFSET_Y + textview.rows, OFFSET_X);
+                            BORDERPAD_Y + textview.rows, BORDERPAD_X);
         if(!prompt.win){
             endwin();
             fprintf(stderr,"prompt.win null");
@@ -348,6 +356,11 @@ bool too_small(void)
 
 wint_t get_keycode(void)
 {
+
+    /* printw("%lu:", wordset.length); */
+    /* printw("%lu:", wcslen(wordset.wctext)); */
+    /* printw("%lu:", debug_sz); */
+
     wint_t key;
     if(wget_wch(prompt.win,&key)==ERR)
         return(WEOF);
@@ -384,7 +397,14 @@ bool use_keycode(wint_t key)
         set_completed = true;
     draw_textview();
 
+    /* fprintf(stderr," <%d,%d> ", wordset.seg_start, wordset.seg_end); */
+
     return(set_completed);
+}
+
+void scroll_down(void)
+{
+    textview.yoffset += 1;
 }
 
 /* ... [48] [49] [50] */
@@ -426,7 +446,8 @@ bool update_state(wint_t* key)
         }
 
         if(wordset.cursor > 0){
-            if( *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)KEY_SPACE )
+            if( *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)KEY_SPACE &&
+                *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)'\012' )
                 *(wordset.state+wordset.cursor) = WC_WHITESPACE;
             else
                 *(wordset.state+wordset.cursor) = WC_OUT_OF_REACH;
@@ -447,6 +468,9 @@ bool update_state(wint_t* key)
         if(compare_segments()){
             if(wordset.seg_end == wordset.length-1)
                 set_complete = true;
+            if(textview.total_rows > MAX_HEIGHT && ((textview.total_rows) - textview.yoffset) > MAX_HEIGHT && *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)'\012')
+                scroll_down();
+
             update_segments();
             reset_prompt();
             *(wordset.state+wordset.cursor) = WC_CORRECT;
@@ -490,7 +514,7 @@ void write_textview_wordset_wctext(void)
 void write_textview_wordset_wcextended(void)
 {
     wclear(textview.win);
-    for(unsigned int x = 0; x < wcslen(wordset.wctext); x++){
+    for(unsigned int x = 0; x < wordset.length; x++){
         switch(*(wordset.state+x)){
             case WC_CURSOR:
                 (wordset.wcextended+x)->attr = WA_REVERSE;
@@ -517,8 +541,8 @@ void write_prompt(void)
 
 bool convert_to_wordset_wcextended(void)
 {
-    wordset.wcextended = malloc( (wcslen(wordset.wctext)+1) * sizeof(cchar_t) );
-    for(unsigned int x = 0; x < wcslen(wordset.wctext); x++){
+    wordset.wcextended = malloc( wordset.length * sizeof(cchar_t) );
+    for(unsigned int x = 0; x < wordset.length; x++){
         if( x == 0 )
             setcchar((wordset.wcextended+x),(wordset.wctext+x),WA_REVERSE,0,NULL);
         else if( *(wordset.wctext+x) == '\012')

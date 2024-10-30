@@ -68,7 +68,7 @@ wchar_t* generate_words(FILE** files, int* file_lengths, uint32_t* size)
             fseek(files[file], offset, SEEK_SET);
             fgetws(buffer, BUFFER_SIZE, files[file]);
 
-            buffer[wcslen(buffer)-1] = ' ';
+            buffer[wcslen(buffer)-1] = (wchar_t)'\040';
 
             /* wordset malloc/realloc */
             if(wordset == NULL){

@@ -21,6 +21,9 @@ bool initialize_wordset_segments(void);
 bool initialize_textview(void);
 bool initialize_prompt(void);
 
+void sanitize_nl(void);
+void insert_nl(void);
+
     void reset_wordset(void);
 void reset_prompt(void);
 void reset_buffer(void);
@@ -37,12 +40,12 @@ bool too_small(void);
 wint_t get_keycode(void);
 bool use_keycode(wint_t);
 
+void scroll_down(void);
+
 void backspace_buffer(void);
 void update_buffer(wint_t);
 bool update_state(wint_t*);
 void update_segments(void);
-void sanitize_nl(void);
-void insert_nl(void);
 void write_textview_wordset_wctext(void);
 void write_textview_wordset_wcextended(void);
 void write_prompt(void);

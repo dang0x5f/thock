@@ -5,7 +5,8 @@
 #include <string.h>
 #include <wchar.h>
 
-static const wchar_t* default_text = L"And reading itself is an amazing activity: You\nglance at a thin, flat object made from a\ntree...and the voice of the author begins to\nspeak inside your head. (Hello!) ";
+/* static const wchar_t* default_text = L"And reading itself is an amazing activity: You\nglance at a thin, flat object made from a\ntree...and the voice of the author begins to\nspeak inside your head. (Hello!) "; */
+static const wchar_t* default_text = L"And reading itself is an amazing activity: You\nglance at a thin, flat object made from a\ntree...and the voice of the author begins to\nspeak inside your head. (Hello!) And reading itself is an amazing activity: You\nglance at a thin, flat object made from a\ntree...and the voice of the author begins to\nspeak inside your head. (Hello!) ";
 /* static const wchar_t* default_text = L"привет"; */
 /* static const wchar_t* default_text = L"虎が人を噛もうとするときのうなり声。"; */
 
