@@ -80,8 +80,8 @@ bool initialize_wordset(void)
     wordset.state  = NULL;
     wordset.length = 0;
 
-    /* explicitly declare modules[0] ? */
-    wordset.wctext = modules[1].get_wordset(&wordset.length);
+    /* TODO: explicitly declare modules[0] ? */
+    wordset.wctext = modules[0].get_wordset(&wordset.length);
     if( (wordset.wctext == NULL) || (wordset.length == 0) ){
         endwin();
         return(false);
@@ -142,12 +142,14 @@ bool initialize_wordset_segments(void)
 
 bool initialize_textview(void)
 {
-    textview.total_rows = wordset.length/(WIDTH-2)+1; // +1 for zero-based index on pads
-    if(wordset.length%(WIDTH-2) > 0)
+    textview.total_rows = wordset.length/(WIDTH-2) +1; // +1 for zero-based index on pads
+/* printw(" %lu %lu %lu ", wordset.length, (WIDTH-2), wordset.length/(WIDTH-2)); */
+    if(wordset.length%(WIDTH-2) != 0)
         textview.total_rows += 1;
+/* printw(" , %lu ", textview.total_rows); */
     
-    textview.cols   = WIDTH;
-    textview.rows   = (textview.total_rows) > MAX_HEIGHT ? MAX_HEIGHT : textview.total_rows;
+    textview.cols    = WIDTH;
+    textview.rows    = (textview.total_rows) >= MAX_HEIGHT ? MAX_HEIGHT : textview.total_rows;
     textview.yoffset = 0;
     textview.xoffset = 0;
 
@@ -214,7 +216,7 @@ void insert_nl(void)
     uint32_t linelength = (WIDTH-2);
     uint32_t offset     = (linelength-1); // 0-based indexing
     
-    while(offset < wordset.length){
+    while(offset < wordset.length-1){
 
         if((wint_t)(*(wordset.wctext+offset)) != '\040'){
             uint32_t tempindex = offset - 1;
@@ -224,9 +226,10 @@ void insert_nl(void)
             *(wordset.wctext+tempindex) = (wchar_t)'\012';
 
             offset = tempindex;
-        }else{
+        }else if((wint_t)(*(wordset.wctext+offset)) == '\040'){
             *(wordset.wctext+offset) = (wchar_t)'\012';
         }
+
 
         offset += linelength;
     }
@@ -468,8 +471,14 @@ bool update_state(wint_t* key)
         if(compare_segments()){
             if(wordset.seg_end == wordset.length-1)
                 set_complete = true;
-            if(textview.total_rows > MAX_HEIGHT && ((textview.total_rows) - textview.yoffset) > MAX_HEIGHT && *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)'\012')
+
+            if(   (textview.total_rows > MAX_HEIGHT)                                 && 
+                  ( (textview.yoffset+(MAX_HEIGHT-1)) != (textview.total_rows-1) )   && 
+                  (*((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)'\012') ){
+
                 scroll_down();
+
+            }
 
             update_segments();
             reset_prompt();
