@@ -81,7 +81,7 @@ bool initialize_wordset(void)
     wordset.length = 0;
 
     /* TODO: explicitly declare modules[0] ? */
-    wordset.wctext = modules[0].get_wordset(&wordset.length);
+    wordset.wctext = modules[1].get_wordset(&wordset.length);
     if( (wordset.wctext == NULL) || (wordset.length == 0) ){
         endwin();
         return(false);
@@ -142,8 +142,6 @@ bool initialize_wordset_segments(void)
 
 bool initialize_textview(void)
 {
-    textview.total_rows = wordset.length/(WIDTH-2) +1; // +1 for zero-based index on pads
-/* printw(" %lu %lu %lu ", wordset.length, (WIDTH-2), wordset.length/(WIDTH-2)); */
     if(wordset.length%(WIDTH-2) != 0)
         textview.total_rows += 1;
 /* printw(" , %lu ", textview.total_rows); */
@@ -216,7 +214,7 @@ void insert_nl(void)
     uint32_t linelength = (WIDTH-2);
     uint32_t offset     = (linelength-1); // 0-based indexing
     
-    while(offset < wordset.length-1){
+    while(offset < wordset.length-1){     // dont needlessly make last character \n
 
         if((wint_t)(*(wordset.wctext+offset)) != '\040'){
             uint32_t tempindex = offset - 1;
@@ -230,7 +228,7 @@ void insert_nl(void)
             *(wordset.wctext+offset) = (wchar_t)'\012';
         }
 
-
+        textview.total_rows += 1;
         offset += linelength;
     }
 
@@ -295,7 +293,7 @@ bool compare_segments(void)
 
     for(int x = wordset.seg_start; x <= wordset.seg_end; x++, iter++){
         /* this covers for newlines in wordset and treats them as spaces \040 */
-        if( (wint_t)(*(wordset.wcextended+x)->chars) == '\012' )
+        if( (wint_t)(*(wordset.wcextended+x)->chars) == (wint_t)'\012' )
             continue;
 
         if( (wint_t)(*(wordset.wcextended+x)->chars) != (wint_t)(*iter)){
@@ -359,11 +357,6 @@ bool too_small(void)
 
 wint_t get_keycode(void)
 {
-
-    /* printw("%lu:", wordset.length); */
-    /* printw("%lu:", wcslen(wordset.wctext)); */
-    /* printw("%lu:", debug_sz); */
-
     wint_t key;
     if(wget_wch(prompt.win,&key)==ERR)
         return(WEOF);
@@ -462,10 +455,10 @@ bool update_state(wint_t* key)
         *(wordset.state+wordset.cursor) = WC_INCORRECT;
         wordset.cursor++;
         *(wordset.state+wordset.cursor) = WC_CURSOR;
-    } else if (*key == KEY_SPACE && 
-               ( ( *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)KEY_SPACE) 
-               ||
-               ( *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)'\012'   ) )
+    } else if (*key == KEY_SPACE && (wint_t)*(wordset.wctext+wordset.cursor) <= KEY_SPACE
+               /* ( ( *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)KEY_SPACE) */ 
+               /* || */
+               /* (   *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)'\012'   ) ) */
               ){
         // compare segment logic
         if(compare_segments()){
@@ -505,11 +498,10 @@ bool update_state(wint_t* key)
     return(set_complete);
 }
 
-// +1 because cursor has not advanced yet
 void update_segments(void)
 {
     uint32_t x;
-    wordset.seg_start = wordset.cursor + 1;
+    wordset.seg_start = wordset.cursor + 1; // cursor has not advanced yet
     for(x = wordset.cursor + 1; x < wordset.length && *(wordset.state+x) != WC_WHITESPACE; x++) ;
     wordset.seg_end = x;
 }
