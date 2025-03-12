@@ -31,7 +31,7 @@ typedef struct {
     uint32_t  length;
     uint32_t  seg_start;
     uint32_t  seg_end;
-    wchar_t*  wctext;
+    char*  wctext;
     cchar_t*  wcextended;
 } Wordset;
 
@@ -42,7 +42,7 @@ typedef struct {
     uint8_t  ypos;
     uint8_t  buffer_index;
     uint8_t  buffer_length;
-    wchar_t* buffer;
+    char* buffer;
     WINDOW*  win;
 } Prompt;
 
@@ -107,13 +107,13 @@ bool initialize_wordset(void)
 bool initialize_wordset_state(void)
 {
     uint32_t index = 0;
-    wchar_t* iter = wordset.wctext;
+    char* iter = wordset.wctext;
 
     while(index < wordset.length){
         if(index == 0)
             *(wordset.state+index) = WC_CURSOR;
         /* TODO: replace magic numbers */
-        else if(*(iter+index) == (wchar_t)'\040' || *(iter+index) == (wchar_t)'\012')
+        else if(*(iter+index) == (char)'\040' || *(iter+index) == (char)'\012')
             *(wordset.state+index) = WC_WHITESPACE;
         else
             *(wordset.state+index) = WC_OUT_OF_REACH;
@@ -179,7 +179,7 @@ bool initialize_prompt(void)
 
     prompt.buffer_index = 0;
     prompt.buffer_length = (WIDTH-2);
-    prompt.buffer = malloc( (prompt.buffer_length+1) * sizeof(wchar_t) );
+    prompt.buffer = malloc( (prompt.buffer_length+1) * sizeof(char) );
     if(!prompt.buffer){
         endwin();
         fprintf(stderr,"prompt.buffer null");
@@ -204,8 +204,8 @@ bool initialize_prompt(void)
 void sanitize_nl(void)
 {
     for(uint32_t x = 0; x < wordset.length; x++){
-        if((wint_t)(*(wordset.wctext+x)) == '\012')
-            *(wordset.wctext+x) = (wchar_t)'\040';
+        if((int)(*(wordset.wctext+x)) == '\012')
+            *(wordset.wctext+x) = (char)'\040';
     }
 }
 
@@ -216,16 +216,16 @@ void insert_nl(void)
     
     while(offset < wordset.length-1){     // dont needlessly make last character \n
 
-        if((wint_t)(*(wordset.wctext+offset)) != '\040'){
+        if((int)(*(wordset.wctext+offset)) != '\040'){
             uint32_t tempindex = offset - 1;
 
-            while((wint_t)(*(wordset.wctext+tempindex)) != '\040') tempindex--;
+            while((int)(*(wordset.wctext+tempindex)) != '\040') tempindex--;
 
-            *(wordset.wctext+tempindex) = (wchar_t)'\012';
+            *(wordset.wctext+tempindex) = (char)'\012';
 
             offset = tempindex;
-        }else if((wint_t)(*(wordset.wctext+offset)) == '\040'){
-            *(wordset.wctext+offset) = (wchar_t)'\012';
+        }else if((int)(*(wordset.wctext+offset)) == '\040'){
+            *(wordset.wctext+offset) = (char)'\012';
         }
 
         textview.total_rows += 1;
@@ -246,8 +246,8 @@ void reset_buffer(void)
     int x;
 
     for(x = 0; x < prompt.buffer_length-1; x++)
-        *(prompt.buffer+x) = (wchar_t)'\040';
-    *(prompt.buffer+x) = (wchar_t)'\0';
+        *(prompt.buffer+x) = (char)'\040';
+    *(prompt.buffer+x) = (char)'\0';
 
     write_prompt(); 
 }
@@ -289,14 +289,14 @@ void draw_colorscheme(void)
 bool compare_segments(void)
 {
     bool iscomplete = true;
-    wchar_t* iter = prompt.buffer;
+    char* iter = prompt.buffer;
 
     for(int x = wordset.seg_start; x <= wordset.seg_end; x++, iter++){
         /* this covers for newlines in wordset and treats them as spaces \040 */
-        if( (wint_t)(*(wordset.wcextended+x)->chars) == (wint_t)'\012' )
+        if( (int)(*(wordset.wcextended+x)->chars) == (int)'\012' )
             continue;
 
-        if( (wint_t)(*(wordset.wcextended+x)->chars) != (wint_t)(*iter)){
+        if( (int)(*(wordset.wcextended+x)->chars) != (int)(*iter)){
             iscomplete = false;
             break;
         }
@@ -355,10 +355,10 @@ bool too_small(void)
     }
 }
 
-wint_t get_keycode(void)
+int get_keycode(void)
 {
-    wint_t key;
-    if(wget_wch(prompt.win,&key)==ERR)
+    int key;
+    if((key = wgetch(prompt.win))==ERR)
         return(WEOF);
 
     switch(key){
@@ -379,7 +379,7 @@ wint_t get_keycode(void)
     return(key);
 }
 
-bool use_keycode(wint_t key)
+bool use_keycode(int key)
 {
     bool set_completed = false;
 
@@ -410,7 +410,7 @@ void backspace_buffer(void)
     if(prompt.buffer_index > 0){
         prompt.buffer_index -= 1;
         mvwaddwstr(prompt.win,1,prompt.buffer_index+1,L" ");
-        *(prompt.buffer+prompt.buffer_index) = (wchar_t)'\000';
+        *(prompt.buffer+prompt.buffer_index) = (char)'\000';
         write_prompt();
 
         update_state(NULL);
@@ -418,19 +418,19 @@ void backspace_buffer(void)
     }
 }
 
-void update_buffer(wint_t key)
+void update_buffer(int key)
 {
     if(prompt.buffer_index == prompt.buffer_length){
         *(prompt.buffer+prompt.buffer_index-1) = key;
-        *(prompt.buffer+prompt.buffer_length)  = (wchar_t)'\000';
+        *(prompt.buffer+prompt.buffer_length)  = (char)'\000';
     }else{
         *(prompt.buffer+prompt.buffer_index) = key;
         prompt.buffer_index += 1;
-        *(prompt.buffer+prompt.buffer_index) = (wchar_t)'\000';
+        *(prompt.buffer+prompt.buffer_index) = (char)'\000';
     }
 }
 
-bool update_state(wint_t* key)
+bool update_state(int* key)
 {
     bool set_complete = false;
 
@@ -442,8 +442,8 @@ bool update_state(wint_t* key)
         }
 
         if(wordset.cursor > 0){
-            if( *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)KEY_SPACE &&
-                *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)'\012' )
+            if( *((wordset.wcextended+wordset.cursor)->chars) == (char)KEY_SPACE &&
+                *((wordset.wcextended+wordset.cursor)->chars) == (char)'\012' )
                 *(wordset.state+wordset.cursor) = WC_WHITESPACE;
             else
                 *(wordset.state+wordset.cursor) = WC_OUT_OF_REACH;
@@ -455,10 +455,10 @@ bool update_state(wint_t* key)
         *(wordset.state+wordset.cursor) = WC_INCORRECT;
         wordset.cursor++;
         *(wordset.state+wordset.cursor) = WC_CURSOR;
-    } else if (*key == KEY_SPACE && (wint_t)*(wordset.wctext+wordset.cursor) <= KEY_SPACE
-               /* ( ( *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)KEY_SPACE) */ 
+    } else if (*key == KEY_SPACE && (int)*(wordset.wctext+wordset.cursor) <= KEY_SPACE
+               /* ( ( *((wordset.wcextended+wordset.cursor)->chars) == (char)KEY_SPACE) */ 
                /* || */
-               /* (   *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)'\012'   ) ) */
+               /* (   *((wordset.wcextended+wordset.cursor)->chars) == (char)'\012'   ) ) */
               ){
         // compare segment logic
         if(compare_segments()){
@@ -467,7 +467,7 @@ bool update_state(wint_t* key)
 
             if(   (textview.total_rows > MAX_HEIGHT)                                 && 
                   ( (textview.yoffset+(MAX_HEIGHT-1)) != (textview.total_rows-1) )   && 
-                  (*((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)'\012') ){
+                  (*((wordset.wcextended+wordset.cursor)->chars) == (char)'\012') ){
 
                 scroll_down();
 
@@ -485,7 +485,7 @@ bool update_state(wint_t* key)
         *(wordset.state+wordset.cursor) = WC_CURSOR;
     } else{
         // compare key to char logic
-        if( *((wordset.wcextended+wordset.cursor)->chars) == (wchar_t)(*key) ){
+        if( *((wordset.wcextended+wordset.cursor)->chars) == (char)(*key) ){
             *(wordset.state+wordset.cursor) = WC_CORRECT;
         }else{
             *(wordset.state+wordset.cursor) = WC_INCORRECT;
@@ -509,7 +509,7 @@ void update_segments(void)
 void write_textview_wordset_wctext(void)
 {
     wclear(textview.win);
-    waddwstr(textview.win, wordset.wctext);
+    waddstr(textview.win, wordset.wctext);
 }
 
 void write_textview_wordset_wcextended(void)
@@ -537,20 +537,20 @@ void write_textview_wordset_wcextended(void)
 
 void write_prompt(void)
 {
-    mvwaddwstr(prompt.win,1,1,prompt.buffer);
+    mvwaddstr(prompt.win,1,1,prompt.buffer);
 }
 
 bool convert_to_wordset_wcextended(void)
 {
-    wordset.wcextended = malloc( wordset.length * sizeof(cchar_t) );
-    for(unsigned int x = 0; x < wordset.length; x++){
-        if( x == 0 )
-            setcchar((wordset.wcextended+x),(wordset.wctext+x),WA_REVERSE,0,NULL);
-        else if( *(wordset.wctext+x) == '\012')
-            setcchar((wordset.wcextended+x),L"\n",0,0,NULL);
-        else
-            setcchar((wordset.wcextended+x),(wordset.wctext+x),0,0,NULL);
-    }
+    /* wordset.wcextended = malloc( wordset.length * sizeof(cchar_t) ); */
+    /* for(unsigned int x = 0; x < wordset.length; x++){ */
+    /*     if( x == 0 ) */
+    /*         setcchar((wordset.wcextended+x),(wordset.wctext+x),WA_REVERSE,0,NULL); */
+    /*     else if( *(wordset.wctext+x) == '\012') */
+    /*         setcchar((wordset.wcextended+x),L"\n",0,0,NULL); */
+    /*     else */
+    /*         setcchar((wordset.wcextended+x),(wordset.wctext+x),0,0,NULL); */
+    /* } */
     return(true);
 }
 

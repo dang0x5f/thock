@@ -3,19 +3,18 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <wchar.h>
 
 /* static const wchar_t* default_text = L"And reading itself is an amazing activity: You\nglance at a thin, flat object made from a\ntree...and the voice of the author begins to\nspeak inside your head. (Hello!) "; */
-static const wchar_t* default_text = L"And reading itself is an amazing activity: You\nglance at a thin, flat object made from a\ntree...and the voice of the author begins to\nspeak inside your head. (Hello!) And reading itself is an amazing activity: You\nglance at a thin, flat object made from a\ntree...and the voice of the author begins to\nspeak inside your head. (Hello!) ";
+static const char* default_text = "And reading itself is an amazing activity: You\nglance at a thin, flat object made from a\ntree...and the voice of the author begins to\nspeak inside your head. (Hello!) And reading itself is an amazing activity: You\nglance at a thin, flat object made from a\ntree...and the voice of the author begins to\nspeak inside your head. (Hello!) ";
 /* static const wchar_t* default_text = L"привет"; */
 /* static const wchar_t* default_text = L"虎が人を噛もうとするときのうなり声。"; */
 
-static wchar_t* get_default_wordset(uint32_t* size){
-    wchar_t* text = NULL;
+static char* get_default_wordset(uint32_t* size){
+    char* text = NULL;
 
-    *size = wcslen(default_text);
-    text = malloc( ((*size)+1) * sizeof(wchar_t) );
-    wcscpy(text,default_text);
+    *size = strlen(default_text);
+    text = malloc( ((*size)+1) * sizeof(char) );
+    strcpy(text,default_text);
     
     return(text);
 }

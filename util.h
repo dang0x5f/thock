@@ -37,8 +37,8 @@ typedef enum {
 } WCState;
 
 typedef struct {
-    wchar_t* name;
-    wchar_t* (*get_wordset)(uint32_t*);
+    char* name;
+    char* (*get_wordset)(uint32_t*);
 } Module;
 
 extern Module modules[];

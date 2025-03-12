@@ -3,7 +3,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <wchar.h>
 
 #define KEY_ESCAPE '\033'
 #define KEY_SPACE  '\040'
@@ -37,14 +36,14 @@ bool compare_segments(void);
 void do_resize(void);
 bool too_small(void);
 
-wint_t get_keycode(void);
-bool use_keycode(wint_t);
+int get_keycode(void);
+bool use_keycode(int);
 
 void scroll_down(void);
 
 void backspace_buffer(void);
-void update_buffer(wint_t);
-bool update_state(wint_t*);
+void update_buffer(int);
+bool update_state(int*);
 void update_segments(void);
 void write_textview_wordset_wctext(void);
 void write_textview_wordset_wcextended(void);

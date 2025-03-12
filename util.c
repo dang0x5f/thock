@@ -87,7 +87,7 @@ SessionTask retrieve_session_task(void)
 {
     SessionTask task = SESSION_NOTASK;
 
-    wint_t keycode = get_keycode();
+    int keycode = get_keycode();
     switch(keycode){
         case ctrl('g'):
             if(!too_small())
@@ -95,9 +95,6 @@ SessionTask retrieve_session_task(void)
             break;
         case ctrl('x'):
             task = SESSION_END;
-            break;
-        case WEOF:
-            // handled internal to ui
             break;
     }
 
@@ -142,7 +139,7 @@ SetTask retrieve_set_task(void)
     bool set_active = true;
     bool set_completed = false;
     SetTask task = SET_NOTASK;
-    wint_t keycode;
+    int keycode;
 
     /* assert(convert_to_wordset_wcextended() == true); */
 
@@ -157,9 +154,6 @@ SetTask retrieve_set_task(void)
                 task = SET_END;
                 set_active = false;
                 set_completed = true;
-                break;
-            case WEOF:
-                // nada
                 break;
             default:
                 set_completed = use_keycode(keycode);
