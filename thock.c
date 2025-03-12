@@ -25,10 +25,10 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
-    /* if(!initialize_interface()){ */
-    /*     fprintf(stderr,"initialize_interface()\n"); */
-    /*     exit(EXIT_FAILURE); */
-    /* } */
+    if(!initialize_interface()){
+        fprintf(stderr,"initialize_interface()\n");
+        exit(EXIT_FAILURE);
+    }
 
     draw();
     while(!end_session){

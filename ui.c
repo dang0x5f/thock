@@ -81,7 +81,7 @@ bool initialize_wordset(void)
     wordset.length = 0;
 
     /* TODO: explicitly declare modules[0] ? */
-    wordset.wctext = modules[1].get_wordset(&wordset.length);
+    wordset.wctext = modules[0].get_wordset(&wordset.length);
     if( (wordset.wctext == NULL) || (wordset.length == 0) ){
         endwin();
         return(false);
@@ -358,22 +358,19 @@ bool too_small(void)
 int get_keycode(void)
 {
     int key;
-    if((key = wgetch(prompt.win))==ERR)
+    if((key = wgetch(prompt.win)) < '\040')
         return(WEOF);
 
     switch(key){
         case KEY_RESIZE:
             do_resize();
-            key = WEOF;
             break;
         case KEY_ESCAPE:
             flushinp();
-            key = WEOF;
             break;
         case '\010':
         case KEY_BACKSPACE:
             if(!(get_ps() == PS_TOOSMOL)) backspace_buffer();
-            key = WEOF;
             break;
     }
     return(key);

@@ -14,7 +14,7 @@ static int fail_index = FI_OFF;
 
 bool initialize_program(void)
 {
-    setlocale(LC_ALL,"");
+    /* setlocale(LC_ALL,""); */
 
     uint8_t mod_count = sizeof(modules)/sizeof(Module);
 
