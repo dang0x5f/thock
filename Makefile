@@ -1,7 +1,8 @@
 .POSIX:
 CC     := clang
 CFLAGS := -ggdb -Wall -Wextra 
-LDLIBS := -lncursesw
+# LDLIBS := -lncursesw
+LDLIBS := -lncurses
 # CPPFLAGS :=
 
 BIN  := prog

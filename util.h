@@ -38,7 +38,7 @@ typedef enum {
 
 typedef struct {
     char* name;
-    char* (*get_wordset)(uint32_t*);
+    char* (*get_wordset)(int*);
 } Module;
 
 extern Module modules[];
