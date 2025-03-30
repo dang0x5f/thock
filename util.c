@@ -107,7 +107,7 @@ void thock(void)
     SetTask task = SET_NOTASK;
 
     /* TODO: track if this has already been done for this wordset, moved from retrieve_set_task */
-    assert(convert_to_wordset_wcextended() == true);
+    /* assert(convert_to_wordset_wcextended() == true); */
 
     set_ps(PS_INSET);
     draw_textview();

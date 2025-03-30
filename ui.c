@@ -263,8 +263,8 @@ void draw_textview(void)
 {
     if(get_ps() == PS_OUTSET)
         write_textview_wordset_wctext();
-    else
-        write_textview_wordset_wcextended();
+    /* else */
+    /*     write_textview_wordset_wcextended(); */
     /* prefresh(WINDOW* pad, int pad_y, int pad_x, int topleft_y, 
      *          int topleft_x, int botright_y, int botright_x) */
     prefresh(textview.win , textview.yoffset , 0 , 
@@ -293,10 +293,10 @@ bool compare_segments(void)
 
     for(int x = wordset.seg_start; x <= wordset.seg_end; x++, iter++){
         /* this covers for newlines in wordset and treats them as spaces \040 */
-        if( (int)(*(wordset.wcextended+x)->chars) == (int)'\012' )
+        if( (int)(*wordset.wctext+x) == (int)'\012' )
             continue;
 
-        if( (int)(*(wordset.wcextended+x)->chars) != (int)(*iter)){
+        if( (int)(*(wordset.wctext+x)) != (int)(*iter)){
             iscomplete = false;
             break;
         }
@@ -357,9 +357,10 @@ bool too_small(void)
 
 int get_keycode(void)
 {
-    int key;
+    /* waddch(prompt.win,'g'); */
+    int key = 0;
     if((key = wgetch(prompt.win)) < '\040')
-        return(WEOF);
+        return(key);
 
     switch(key){
         case KEY_RESIZE:
@@ -406,7 +407,8 @@ void backspace_buffer(void)
 {
     if(prompt.buffer_index > 0){
         prompt.buffer_index -= 1;
-        mvwaddwstr(prompt.win,1,prompt.buffer_index+1,L" ");
+        /* mvwaddwstr(prompt.win,1,prompt.buffer_index+1,L" "); */
+        mvwaddch(prompt.win,1,prompt.buffer_index+1,KEY_SPACE);
         *(prompt.buffer+prompt.buffer_index) = (char)'\000';
         write_prompt();
 
@@ -439,8 +441,8 @@ bool update_state(int* key)
         }
 
         if(wordset.cursor > 0){
-            if( *((wordset.wcextended+wordset.cursor)->chars) == (char)KEY_SPACE &&
-                *((wordset.wcextended+wordset.cursor)->chars) == (char)'\012' )
+            if( *(wordset.wctext+wordset.cursor) == (char)KEY_SPACE &&
+                *(wordset.wctext+wordset.cursor) == (char)'\012' )
                 *(wordset.state+wordset.cursor) = WC_WHITESPACE;
             else
                 *(wordset.state+wordset.cursor) = WC_OUT_OF_REACH;
@@ -464,7 +466,7 @@ bool update_state(int* key)
 
             if(   (textview.total_rows > MAX_HEIGHT)                                 && 
                   ( (textview.yoffset+(MAX_HEIGHT-1)) != (textview.total_rows-1) )   && 
-                  (*((wordset.wcextended+wordset.cursor)->chars) == (char)'\012') ){
+                  (*(wordset.wctext+wordset.cursor) == (char)'\012') ){
 
                 scroll_down();
 
@@ -482,7 +484,7 @@ bool update_state(int* key)
         *(wordset.state+wordset.cursor) = WC_CURSOR;
     } else{
         // compare key to char logic
-        if( *((wordset.wcextended+wordset.cursor)->chars) == (char)(*key) ){
+        if( *(wordset.wctext+wordset.cursor) == (char)(*key) ){
             *(wordset.state+wordset.cursor) = WC_CORRECT;
         }else{
             *(wordset.state+wordset.cursor) = WC_INCORRECT;

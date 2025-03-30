@@ -20,6 +20,8 @@ int main(void)
     bool end_session = false;
     SessionTask task = SESSION_NOTASK;
 
+                printf("BEFORE INIT_PROGRAM()");
+
     if(!initialize_program()){
         fprintf(stderr,"initialize_program()\n");
         exit(EXIT_FAILURE);
@@ -30,7 +32,9 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
+                printf("BEFORE DRAW()");
     draw();
+                printf("AFTER DRAW()");
     while(!end_session){
         task = retrieve_session_task();
         switch(task){
@@ -38,6 +42,7 @@ int main(void)
                 /* draw(); */
                 break;
             case SESSION_RUN:
+                printf("CASE SESSION_RUN");
                 /* end_session = thock(); */
                 thock();
                 break;
