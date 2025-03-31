@@ -79,6 +79,7 @@ bool initialize_wordset(void)
     /* wordset.wcextended    = NULL; */
     wordset.state  = NULL;
     wordset.length = 0;
+    textview.total_rows = 0;
 
     /* TODO: explicitly declare modules[0] ? */
     wordset.wctext = modules[0].get_wordset(&wordset.length);
@@ -90,7 +91,7 @@ bool initialize_wordset(void)
     sanitize_nl();
     insert_nl();
 
-    wordset.state = malloc( (wordset.length) * sizeof(uint8_t) );
+    wordset.state = malloc( (wordset.length) * sizeof(int) );
     if ( (wordset.state == NULL) || !initialize_wordset_state() ){
         endwin();
         return(false);
@@ -204,7 +205,7 @@ bool initialize_prompt(void)
 void sanitize_nl(void)
 {
     for(int x = 0; x < wordset.length; x++){
-        if((int)(*(wordset.wctext+x)) == '\012')
+        if((int)(*(wordset.wctext+x)) == (int)'\012')
             *(wordset.wctext+x) = (char)'\040';
     }
 }
@@ -216,15 +217,15 @@ void insert_nl(void)
     
     while(offset < wordset.length-1){     // dont needlessly make last character \n
 
-        if((int)(*(wordset.wctext+offset)) != '\040'){
+        if((int)(*(wordset.wctext+offset)) != (int)'\040'){
             int tempindex = offset - 1;
 
-            while((int)(*(wordset.wctext+tempindex)) != '\040') tempindex--;
+            while((int)(*(wordset.wctext+tempindex)) != (int)'\040') tempindex--;
 
             *(wordset.wctext+tempindex) = (char)'\012';
 
             offset = tempindex;
-        }else if((int)(*(wordset.wctext+offset)) == '\040'){
+        }else if((int)(*(wordset.wctext+offset)) == (int)'\040'){
             *(wordset.wctext+offset) = (char)'\012';
         }
 
@@ -293,7 +294,7 @@ bool compare_segments(void)
 
     for(int x = wordset.seg_start; x <= (int)wordset.seg_end; x++, iter++){
         /* this covers for newlines in wordset and treats them as spaces \040 */
-        if( (int)(*wordset.wctext+x) == (int)'\012' )
+        if( (int)(*(wordset.wctext+x)) == (int)'\012' )
             continue;
 
         if( (int)(*(wordset.wctext+x)) != (int)(*iter)){
