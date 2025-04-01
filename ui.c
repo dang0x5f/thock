@@ -264,6 +264,8 @@ void draw_textview(void)
 {
     if(get_ps() == PS_OUTSET)
         write_textview_wordset_wctext();
+    else
+        write_textview_wordset_wcextended();
     /* else */
     /*     write_textview_wordset_wcextended(); */
     /* prefresh(WINDOW* pad, int pad_y, int pad_x, int topleft_y, 
@@ -516,25 +518,24 @@ void write_textview_wordset_wctext(void)
 
 void write_textview_wordset_wcextended(void)
 {
-    /* wclear(textview.win); */
-    /* for(unsigned int x = 0; x < wordset.length; x++){ */
-    /*     switch(*(wordset.state+x)){ */
-    /*         case WC_CURSOR: */
-    /*             (wordset.wcextended+x)->attr = WA_REVERSE; */
-    /*             break; */
-    /*         case WC_CORRECT: */
-    /*             (wordset.wcextended+x)->attr = COLOR_PAIR(2); */
-    /*             break; */
-    /*         case WC_INCORRECT: */
-    /*             (wordset.wcextended+x)->attr = COLOR_PAIR(1); */
-    /*             break; */
-    /*         case WC_OUT_OF_REACH: */
-    /*         case WC_WHITESPACE: */
-    /*             (wordset.wcextended+x)->attr = WA_NORMAL; */
-    /*             break; */
-    /*     } */
-    /*     wadd_wch(textview.win,wordset.wcextended+x); */
-    /* } */
+    wclear(textview.win);
+    for(int x = 0; x < wordset.length; x++){
+        switch(*(wordset.state+x)){
+            case WC_CURSOR:
+                waddch(textview.win,*(wordset.wctext+x) | A_REVERSE);
+                break;
+            case WC_CORRECT:
+                waddch(textview.win,*(wordset.wctext+x) | COLOR_PAIR(2));
+                break;
+            case WC_INCORRECT:
+                waddch(textview.win,*(wordset.wctext+x) | COLOR_PAIR(1));
+                break;
+            case WC_OUT_OF_REACH:
+            case WC_WHITESPACE:
+                waddch(textview.win,*(wordset.wctext+x) | A_NORMAL);
+                break;
+        }
+    }
 }
 
 void write_prompt(void)
