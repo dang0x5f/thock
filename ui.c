@@ -1,3 +1,8 @@
+/* TODO */
+/* error counter */ 
+/* reset Ctrl+R */
+/* timer */
+
 /* #define _XOPEN_SOURCE_EXTENDED 1 */
 #include <stdio.h>
 #include <ncurses.h>
@@ -46,11 +51,16 @@ typedef struct {
     WINDOW*  win;
 } Prompt;
 
+typedef struct {
+    int errs;
+} Stats;
+
 
 /* Globals */
 static TextView textview;
 static Wordset  wordset;
 static Prompt   prompt;
+static Stats    stats;
 
 
 bool initialize_stdscr(void)
@@ -202,6 +212,13 @@ bool initialize_prompt(void)
     return(true);
 }
 
+bool initialize_stats(void)
+{
+    stats.errs = 0;
+
+    return(true);
+}
+
 void sanitize_nl(void)
 {
     for(int x = 0; x < wordset.length; x++){
@@ -279,6 +296,11 @@ void draw_textview(void)
 void draw_prompt(void)
 {
     wrefresh(prompt.win);
+}
+
+void draw_stats()
+{
+    /* TODO */
 }
 
 void draw_colorscheme(void)
@@ -393,6 +415,7 @@ bool use_keycode(int key)
     if(update_state(&key))
         set_completed = true;
     draw_textview();
+    draw_stats();
 
     /* fprintf(stderr," <%d,%d> ", wordset.seg_start, wordset.seg_end); */
 
@@ -493,6 +516,7 @@ bool update_state(int* key)
             *(wordset.state+wordset.cursor) = WC_CORRECT;
         }else{
             *(wordset.state+wordset.cursor) = WC_INCORRECT;
+            stats.errs += 1;
         }
 
         wordset.cursor++;

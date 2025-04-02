@@ -50,6 +50,11 @@ bool initialize_interface(void)
         return(false);
     }
 
+    if(!initialize_stats()){
+        fprintf(stderr,"initialize_stats() failed\n");
+        return(false);
+    }
+
     return(true);
 }
 
