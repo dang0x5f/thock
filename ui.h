@@ -19,6 +19,7 @@ bool initialize_wordset_state(void);
 bool initialize_wordset_segments(void);
 bool initialize_textview(void);
 bool initialize_prompt(void);
+bool initialize_stats(void);
 
 void sanitize_nl(void);
 void insert_nl(void);

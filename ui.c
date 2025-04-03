@@ -301,6 +301,8 @@ void draw_prompt(void)
 void draw_stats()
 {
     /* TODO */
+    mvwprintw(stdscr, STD_Y - 2, 2 ,"%d", stats.errs);
+    refresh();
 }
 
 void draw_colorscheme(void)
