@@ -53,6 +53,7 @@ typedef struct {
 
 typedef struct {
     int errs;
+    int correct;
 } Stats;
 
 
@@ -77,6 +78,8 @@ bool initialize_stdscr(void)
     init_pair(1,COLOR_BLACK,COLOR_RED);
     init_pair(2,COLOR_BLACK,COLOR_GREEN);
     init_pair(3,COLOR_BLACK,COLOR_BLUE);
+    init_pair(4,COLOR_RED,COLOR_BLACK);
+    init_pair(5,COLOR_GREEN,COLOR_BLACK);
 
     draw_stdscr();
     
@@ -215,6 +218,7 @@ bool initialize_prompt(void)
 bool initialize_stats(void)
 {
     stats.errs = 0;
+    stats.correct = 0;
 
     return(true);
 }
@@ -301,7 +305,14 @@ void draw_prompt(void)
 void draw_stats()
 {
     /* TODO */
+
+    attrset(COLOR_PAIR(4));
     mvwprintw(stdscr, STD_Y - 2, 2 ,"%d", stats.errs);
+
+    attrset(COLOR_PAIR(5));
+    mvwprintw(stdscr, STD_Y - 2, 2 + 4,"%d", stats.correct);
+
+    attrset(A_NORMAL);
     refresh();
 }
 
@@ -516,6 +527,7 @@ bool update_state(int* key)
         // compare key to char logic
         if( *(wordset.wctext+wordset.cursor) == (char)(*key) ){
             *(wordset.state+wordset.cursor) = WC_CORRECT;
+            stats.correct += 1;
         }else{
             *(wordset.state+wordset.cursor) = WC_INCORRECT;
             stats.errs += 1;
