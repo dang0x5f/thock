@@ -2,7 +2,7 @@
 CC     := clang
 CFLAGS := -ggdb -Wall -Wextra 
 # LDLIBS := -lncursesw
-LDLIBS := -lncurses
+LDLIBS := -lncurses -lpthread
 # CPPFLAGS :=
 
 BIN  := prog

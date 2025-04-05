@@ -54,6 +54,7 @@ bool convert_to_wordset_wcextended(void);
 
 void place_cursor(void);
 void toggle_cursor(CursorVisibilityState);
+void* run_timer(void*);
 
 void free_stdscr_resize(void);
 void free_stdscr_exit(void);

@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <ncurses.h>
 #include <assert.h>
+#include <time.h>
+#include <unistd.h>
+#include <pthread.h>
 
 #include "ui.h"
 #include "util.h"
@@ -54,6 +57,11 @@ typedef struct {
 typedef struct {
     int errs;
     int correct;
+    int run_time;
+    time_t start_time;
+    time_t current_time;
+    pthread_t timer_thr_id;
+    bool timer_running;
 } Stats;
 
 
@@ -219,6 +227,8 @@ bool initialize_stats(void)
 {
     stats.errs = 0;
     stats.correct = 0;
+    stats.run_time = 0;
+    stats.timer_running = false;
 
     return(true);
 }
@@ -287,8 +297,7 @@ void draw_textview(void)
         write_textview_wordset_wctext();
     else
         write_textview_wordset_wcextended();
-    /* else */
-    /*     write_textview_wordset_wcextended(); */
+
     /* prefresh(WINDOW* pad, int pad_y, int pad_x, int topleft_y, 
      *          int topleft_x, int botright_y, int botright_x) */
     prefresh(textview.win , textview.yoffset , 0 , 
@@ -313,6 +322,9 @@ void draw_stats()
     mvwprintw(stdscr, STD_Y - 2, 2 + 4,"%d", stats.correct);
 
     attrset(A_NORMAL);
+
+    mvwprintw(stdscr, STD_Y - 2, 2 + 8,"%d", stats.run_time);
+
     refresh();
 }
 
@@ -425,8 +437,10 @@ bool use_keycode(int key)
     update_buffer(key);
     write_prompt();
 
-    if(update_state(&key))
+    if(update_state(&key)){
         set_completed = true;
+        stats.timer_running = false;
+    }
     draw_textview();
     draw_stats();
 
@@ -472,6 +486,11 @@ void update_buffer(int key)
 bool update_state(int* key)
 {
     bool set_complete = false;
+
+    if(!stats.timer_running){
+        stats.timer_running = true;
+        pthread_create(&stats.timer_thr_id,NULL,run_timer,NULL);
+    }
 
     if (key == NULL){
         // backspace logic
@@ -604,6 +623,23 @@ void place_cursor(void)
 void toggle_cursor(CursorVisibilityState cvs)
 {
     curs_set(cvs);
+}
+
+void* run_timer(void *arg)
+{
+    double elapsed_time = 0;
+    time(&stats.start_time);
+
+    while(stats.timer_running){
+        time(&stats.current_time);
+        elapsed_time = difftime(stats.current_time,stats.start_time);     
+
+        stats.run_time = (int) elapsed_time;
+        draw_stats();
+        sleep(1);
+    }
+
+    return(NULL);
 }
 
 void free_stdscr_resize(void)
