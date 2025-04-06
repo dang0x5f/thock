@@ -61,6 +61,7 @@ typedef struct {
     time_t start_time;
     time_t current_time;
     pthread_t timer_thr_id;
+    pthread_mutex_t mutex;
     bool timer_running;
 } Stats;
 
@@ -89,7 +90,9 @@ bool initialize_stdscr(void)
     init_pair(4,COLOR_RED,COLOR_BLACK);
     init_pair(5,COLOR_GREEN,COLOR_BLACK);
 
+    pthread_mutex_lock(&stats.mutex);
     draw_stdscr();
+    pthread_mutex_unlock(&stats.mutex);
     
     return(true);
 }
@@ -229,6 +232,7 @@ bool initialize_stats(void)
     stats.correct = 0;
     stats.run_time = 0;
     stats.timer_running = false;
+    pthread_mutex_init(&stats.mutex,NULL);
 
     return(true);
 }
@@ -313,7 +317,8 @@ void draw_prompt(void)
 
 void draw_stats()
 {
-    /* TODO */
+    /* TODO spacing between fields */
+    /* TODO cursor shows, ie, return cursor to prev position */
 
     attrset(COLOR_PAIR(4));
     mvwprintw(stdscr, STD_Y - 2, 2 ,"%d", stats.errs);
@@ -363,7 +368,9 @@ void do_resize(void)
 
     if(too_small()){
         mvprintw(1,1,"too smol...");
+    pthread_mutex_lock(&stats.mutex);
         draw_stdscr();
+    pthread_mutex_unlock(&stats.mutex);
     }else{
         textview.win = newpad(textview.total_rows, WIDTH);
         if(textview.win == NULL){
@@ -382,10 +389,12 @@ void do_resize(void)
         keypad(prompt.win,TRUE);
         box(prompt.win,0,0);
 
+    pthread_mutex_lock(&stats.mutex);
         draw_stdscr();
         draw_textview();
         draw_prompt();
         write_prompt();
+    pthread_mutex_unlock(&stats.mutex);
     }
 }
 
@@ -441,8 +450,10 @@ bool use_keycode(int key)
         set_completed = true;
         stats.timer_running = false;
     }
+    pthread_mutex_lock(&stats.mutex);
     draw_textview();
-    draw_stats();
+    pthread_mutex_unlock(&stats.mutex);
+    /* draw_stats(); */
 
     /* fprintf(stderr," <%d,%d> ", wordset.seg_start, wordset.seg_end); */
 
@@ -467,7 +478,9 @@ void backspace_buffer(void)
         write_prompt();
 
         update_state(NULL);
+    pthread_mutex_lock(&stats.mutex);
         draw_textview();
+    pthread_mutex_unlock(&stats.mutex);
     }
 }
 
@@ -635,7 +648,9 @@ void* run_timer(void *arg)
         elapsed_time = difftime(stats.current_time,stats.start_time);     
 
         stats.run_time = (int) elapsed_time;
+        pthread_mutex_lock(&stats.mutex);
         draw_stats();
+        pthread_mutex_unlock(&stats.mutex);
         sleep(1);
     }
 
