@@ -1,7 +1,5 @@
 /* TODO */
-/* error counter */ 
 /* reset Ctrl+R */
-/* timer */
 
 /* #define _XOPEN_SOURCE_EXTENDED 1 */
 #include <stdio.h>
@@ -320,15 +318,22 @@ void draw_stats()
     /* TODO spacing between fields */
     /* TODO cursor shows, ie, return cursor to prev position */
 
+    int temp_x , temp_y;
+    int horizontal_pos = 2;
+
+    mvwprintw(stdscr, STD_Y - 2, horizontal_pos, "%s", "                    ");
+
     attrset(COLOR_PAIR(4));
-    mvwprintw(stdscr, STD_Y - 2, 2 ,"%d", stats.errs);
+    mvwprintw(stdscr, STD_Y - 2, horizontal_pos ,"%d", stats.errs);
+    horizontal_pos = getcurx(stdscr) + 1;
 
     attrset(COLOR_PAIR(5));
-    mvwprintw(stdscr, STD_Y - 2, 2 + 4,"%d", stats.correct);
+    mvwprintw(stdscr, STD_Y - 2, horizontal_pos, "%d", stats.correct);
+    horizontal_pos = getcurx(stdscr) + 1;
 
     attrset(A_NORMAL);
 
-    mvwprintw(stdscr, STD_Y - 2, 2 + 8,"%d", stats.run_time);
+    mvwprintw(stdscr, STD_Y - 2, horizontal_pos, "%d", stats.run_time);
 
     refresh();
 }

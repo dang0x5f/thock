@@ -61,4 +61,3 @@ int main(void)
 }
 
 /* TODO: press enter to continue at game completion */ 
-/* TODO: timer */
