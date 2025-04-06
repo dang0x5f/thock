@@ -315,10 +315,6 @@ void draw_prompt(void)
 
 void draw_stats()
 {
-    /* TODO spacing between fields */
-    /* TODO cursor shows, ie, return cursor to prev position */
-
-    int temp_x , temp_y;
     int horizontal_pos = 2;
 
     mvwprintw(stdscr, STD_Y - 2, horizontal_pos, "%s", "                    ");
@@ -336,6 +332,8 @@ void draw_stats()
     mvwprintw(stdscr, STD_Y - 2, horizontal_pos, "%d", stats.run_time);
 
     refresh();
+
+    place_cursor();
 }
 
 void draw_colorscheme(void)
@@ -458,7 +456,6 @@ bool use_keycode(int key)
     pthread_mutex_lock(&stats.mutex);
     draw_textview();
     pthread_mutex_unlock(&stats.mutex);
-    /* draw_stats(); */
 
     /* fprintf(stderr," <%d,%d> ", wordset.seg_start, wordset.seg_end); */
 
