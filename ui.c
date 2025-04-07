@@ -443,7 +443,7 @@ bool use_keycode(int key)
 {
     bool set_completed = false;
 
-    if(key < 32 || key == KEY_BACKSPACE) return(set_completed);
+    if(key < 32 || key == KEY_BACKSPACE || key == KEY_RESIZE) return(set_completed);
     if(get_ps() == PS_TOOSMOL) return(set_completed);
     if(prompt.buffer_index == prompt.buffer_length) return(set_completed);
     update_buffer(key);
