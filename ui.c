@@ -333,7 +333,7 @@ void draw_stats()
 
     refresh();
 
-    place_cursor();
+    draw_prompt();
 }
 
 void draw_colorscheme(void)
@@ -395,8 +395,8 @@ void do_resize(void)
     pthread_mutex_lock(&stats.mutex);
         draw_stdscr();
         draw_textview();
-        draw_prompt();
         write_prompt();
+        draw_prompt();
     pthread_mutex_unlock(&stats.mutex);
     }
 }

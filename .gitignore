@@ -1,7 +1,8 @@
-test.c
+test*.c
 prog
 tags
 *.o
 *.d
 *.swp
+*.out
 *.core
