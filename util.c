@@ -122,7 +122,6 @@ void thock(void)
             case SET_NOTASK:
                 break;
             case SET_RELOAD:
-                /* TODO blink cursor disappears */
                 /* TODO refactor */
                 initialize_stdscr();
                 initialize_stats();
@@ -130,6 +129,7 @@ void thock(void)
                 initialize_wordset_state();
                 initialize_wordset_segments();
                 initialize_prompt();
+                toggle_cursor(CVS_NORMAL);
                 reset_prompt();
                 draw();
                 /* if(!too_small()) */
